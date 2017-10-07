@@ -1,0 +1,5 @@
+<jboss-web>
+    <!-- this is to link the standalone-full.xml for the storehouse security-domain 
+    so Jboss knows it should be using this security-domain for the application -->
+    <security-domain>storehouse</security-domain>
+</jboss-web>

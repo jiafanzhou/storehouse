@@ -1,0 +1,63 @@
+<!--
+(1) To start JBoss manually: 
+$JBOSS_HOME/bin/standalone.sh -c=standalone-full.xml 
+(2) Copy the ear artifact: 
+cp library-app/storehouse-ear/target/storehouse-ear-0.0.1-SNAPSHOT.ear /opt/wildfly-8.1.0.Final/standalone/deployments/
+(3) Then go to chrome postman extension:
+- get (getall): http://localhost:8080/storehouse/api/users
+- post (add): http://localhost:8080/storehouse/api/users
+- put (update): http://localhost:8080/storehouse/api/users/1
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.storehouse</groupId>
+        <artifactId>storehouse-app</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>storehouse-ear</artifactId>
+    <packaging>ear</packaging>
+    
+    <dependencies>
+        <dependency>
+            <groupId>com.storehouse</groupId>
+            <artifactId>storehouse-model</artifactId>
+            <type>ejb</type>
+        </dependency>
+        <dependency>
+            <groupId>com.storehouse</groupId>
+            <artifactId>storehouse-resource-war</artifactId>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>com.storehouse</groupId>
+            <artifactId>storehouse-resource-war</artifactId>
+            <type>pom</type>
+        </dependency>
+    </dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ear-plugin</artifactId>
+                <configuration>
+                    <defaultLibBundleDir>lib/</defaultLibBundleDir>
+                    <skinnyWars>true</skinnyWars>
+                    <modules>
+                        <webModule>
+                            <groupId>com.storehouse</groupId>
+                            <artifactId>storehouse-resource-war</artifactId>
+                            <contextRoot>/storehouse</contextRoot>
+                        </webModule>
+                        <ejbModule>
+                            <groupId>com.storehouse</groupId>
+                            <artifactId>storehouse-model</artifactId>
+                        </ejbModule>
+                    </modules>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.storehouse</groupId>
+        <artifactId>storehouse-app</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>storehouse-resource-war</artifactId>
+    <packaging>war</packaging>
+    
+    <!-- These WEB-INF/lib/*.jar will be archived in the ear file,
+    war file is for web archive file.
+     -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <packagingExcludes>WEB-INF/lib/*.jar</packagingExcludes>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
+     <!--  this is the module that has the REST interface, war is just a wrapper around it -->
+    <dependencies>
+        <dependency>
+            <groupId>com.storehouse</groupId>
+            <artifactId>storehouse-resource</artifactId>
+        </dependency>
+    </dependencies>
+</project>

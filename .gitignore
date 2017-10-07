@@ -1,0 +1,50 @@
+.pydevproject
+target
+# Compiled source #
+*.class
+
+# Eclipse files
+.project
+.classpath
+.settings
+.metadata/
+.recommenders/
+
+# Intellij
+.idea/
+*.iml
+*.iws
+
+
+# Maven build files
+target/
+reports
+
+# PMD
+.pmd
+
+# Merge files
+*.orig
+
+# Netbeans project files
+nbactions*.xml
+nb-configuration.xml
+.netbeans_automatic_build
+nbproject
+
+# TAF output
+test-output
+tmp
+
+# TAF files
+curl.exe
+libeay32.dll
+libssl32.dll
+
+# Random
+CosServices.cfg
+CosServices.cfg.tmp
+*.dmp
+
+
+

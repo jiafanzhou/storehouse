@@ -1,0 +1,6 @@
+{
+	"name": "Admin",
+	"email": "admin@domain.com",
+	"password": "12345678",
+	"type": "EMPLOYEE"
+}
