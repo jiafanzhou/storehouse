@@ -4,7 +4,7 @@ import org.junit.Ignore;
 
 @Ignore
 public enum ResourceDefinitions {
-    USER("users");
+    USER("users"), ORDER("orders");
 
     private String resouceName;
 

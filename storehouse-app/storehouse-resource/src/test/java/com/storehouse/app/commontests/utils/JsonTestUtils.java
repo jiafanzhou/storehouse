@@ -2,6 +2,7 @@ package com.storehouse.app.commontests.utils;
 
 import com.google.gson.JsonObject;
 import com.storehouse.app.common.json.JsonReader;
+import com.storehouse.app.order.model.Order.OrderStatus;
 
 import java.io.InputStream;
 import java.util.Scanner;
@@ -46,6 +47,10 @@ public class JsonTestUtils {
 
     public static String getJsonWithPassword(final String password) {
         return String.format("{\"password\": \"%s\"}", password);
+    }
+
+    public static String getJsonWithOrderStatus(final OrderStatus status) {
+        return String.format("{\"status\": \"%s\"}", status);
     }
 
     public static String getJsonWithEmailAndPassword(final String email, final String password) {

@@ -1,0 +1,27 @@
+{
+    "paging": {
+        "totalRecords": 2
+    },
+    "entries": [
+        {
+            "id": 1,
+            "createdAt": "2017-10-10T10:00:00Z",
+            "customer": {
+                "id": 1,
+                "name": "Mary Simpson"
+            },
+            "total": 0.00,
+            "currentStatus": "DELIVERED"
+        },
+        {
+            "id": 2,
+            "createdAt": "2017-10-11T10:00:00Z",
+            "customer": {
+                "id": 2,
+                "name": "John Doe"
+            },
+            "total": 0.00,
+            "currentStatus": "RESERVED"
+        }
+    ]
+}

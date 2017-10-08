@@ -1,0 +1,178 @@
+package com.storehouse.app.order.resource;
+
+import static com.storehouse.app.common.model.StandardsOperationResults.*;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.storehouse.app.common.exception.FieldNotValidException;
+import com.storehouse.app.common.exception.OrderNotFoundException;
+import com.storehouse.app.common.exception.OrderStatusCannotBeChangedException;
+import com.storehouse.app.common.exception.UserNotAuthorizedException;
+import com.storehouse.app.common.exception.UserNotFoundException;
+import com.storehouse.app.common.json.JsonReader;
+import com.storehouse.app.common.json.JsonUtils;
+import com.storehouse.app.common.json.OperationResultJsonWriter;
+import com.storehouse.app.common.model.HttpCode;
+import com.storehouse.app.common.model.OperationResult;
+import com.storehouse.app.common.model.PaginatedData;
+import com.storehouse.app.common.model.ResourceMessage;
+import com.storehouse.app.common.model.filter.OrderFilter;
+import com.storehouse.app.order.model.Order;
+import com.storehouse.app.order.model.Order.OrderStatus;
+import com.storehouse.app.order.services.OrderServices;
+
+import java.util.List;
+
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.core.UriInfo;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Path("/orders")
+@Produces(MediaType.APPLICATION_JSON)
+@Consumes(MediaType.APPLICATION_JSON)
+public class OrderResource {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
+    private static final ResourceMessage RM = new ResourceMessage("order");
+
+    @Inject
+    OrderServices orderServices;
+
+    @Inject
+    OrderJsonConverter converter;
+
+    // we need to extract a few parameters from the URL to create the user filter
+    // object in order for pagination
+    @Context
+    UriInfo uriInfo;
+
+    @Context
+    SecurityContext securityContext;
+
+    @POST
+    @RolesAllowed("CUSTOMER")
+    public Response add(final String body) {
+        logger.info("Adding a new order with body {}", body);
+
+        // convert the json object from String to JsonObject, and then an Order object
+        Order order = converter.convertFrom(body);
+
+        HttpCode httpCode = HttpCode.CREATED;
+        OperationResult result;
+
+        try {
+            order = orderServices.add(order);
+            result = OperationResult.success(JsonUtils.getJsonElementWithId(order.getId()));
+        } catch (final FieldNotValidException ex) {
+            logger.error("Field is not valid", ex);
+            httpCode = HttpCode.VALIDATION_ERROR;
+            result = getOperationResultInvalidField(RM, ex);
+        } catch (final UserNotFoundException ex) {
+            logger.error("Customer cannot be found for this order", ex);
+            httpCode = HttpCode.VALIDATION_ERROR;
+            result = getOperationResultDependencyNotFound(RM, "customer");
+        }
+
+        logger.info("Returning the operation result after adding order: {}", result);
+
+        // convert the OperationResult object to Json
+        return Response.status(httpCode.getCode()).entity(OperationResultJsonWriter.toJson(result)).build();
+    }
+
+    private OrderStatus getStatusFromJson(final String body) {
+        final JsonObject jsonObject = JsonReader.readAsJsonObject(body);
+        return OrderStatus.valueOf(JsonReader.getStringOrNull(jsonObject, "status"));
+    }
+
+    @POST
+    @Path("/{id}/status")
+    @PermitAll
+    public Response addStatus(@PathParam("id") final Long id, final String body) {
+        logger.info("Adding a new status{} for order {}", body, id);
+
+        final OrderStatus newStatus = getStatusFromJson(body);
+
+        try {
+            orderServices.updateStatus(id, newStatus);
+        } catch (final OrderNotFoundException ex) {
+            logger.error("Order {} not found to add a new status", id);
+            return Response.status(HttpCode.NOT_FOUND.getCode()).build();
+        } catch (final OrderStatusCannotBeChangedException ex) {
+            logger.error("Error while changing order status {}", ex.getMessage());
+            return Response.status(HttpCode.VALIDATION_ERROR.getCode()).build();
+        } catch (final UserNotAuthorizedException ex) {
+            logger.error("User is not authorized to perform this action {}", ex.getMessage());
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
+        return Response.status(HttpCode.OK.getCode()).build();
+    }
+
+    @GET
+    @Path("/{id}")
+    @PermitAll
+    public Response findById(@PathParam("id") final Long id) {
+        logger.info("Find order id: {}", id);
+
+        ResponseBuilder rb;
+        try {
+            final Order order = orderServices.findById(id);
+            final OperationResult result = OperationResult.success(converter.convertToJsonElement(order));
+            rb = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
+            logger.info("Order found: {}", order);
+        } catch (final OrderNotFoundException ex) {
+            logger.info("No Order found for id: {}", id);
+            rb = Response.status(HttpCode.NOT_FOUND.getCode())
+                    .entity(OperationResultJsonWriter.toJson(getOperationResultNotFound(RM)));
+        }
+        return rb.build();
+    }
+
+    @GET
+    @Path("/all")
+    @RolesAllowed("EMPLOYEE")
+    public Response findAll() {
+        logger.info("Find all orders.");
+
+        final List<Order> orders = orderServices.findAll();
+
+        logger.info("Found all orders: {}", orders);
+
+        final JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithPagingAndEntries(
+                new PaginatedData<>(orders.size(), orders), converter);
+        return Response.status(HttpCode.OK.getCode())
+                .entity(OperationResultJsonWriter.toJson(OperationResult.success(jsonWithPagingAndEntries))).build();
+    }
+
+    @GET
+    @RolesAllowed("EMPLOYEE")
+    // http://localhost:8080/storehouse/api/orders?page=0&per_page=2&sort=-startDate
+    public Response findByFilter() {
+        final OrderFilter orderFilter = new OrderFilterExtractorFromUrl(uriInfo).getFilter();
+        logger.info("Finding orders using filter: {}", orderFilter);
+
+        final PaginatedData<Order> data = orderServices.findByFilter(orderFilter);
+
+        logger.info("Finding the paginated orders: {}", data);
+
+        final JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithPagingAndEntries(
+                data, converter);
+        return Response.status(HttpCode.OK.getCode())
+                .entity(OperationResultJsonWriter.toJson(OperationResult.success(jsonWithPagingAndEntries))).build();
+    }
+}

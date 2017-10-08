@@ -1,0 +1,4 @@
+{
+    "errorIdentification": "order.invalidField.items",
+    "errorDescription": "items is not valid: may not be null"
+}

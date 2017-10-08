@@ -24,7 +24,7 @@ public class OrderMockitoArgumentMatcher extends ArgumentMatcher<Order> {
     public boolean matches(final Object argument) {
         final Order actualOrder = (Order) argument;
         assertThat(actualOrder.getId(), is(equalTo(expectedOrder.getId())));
-        assertThat(actualOrder.getCustomer(), is(equalTo(expectedOrder.getCustomer())));
+        // assertThat(actualOrder.getCustomer(), is(equalTo(expectedOrder.getCustomer())));
         assertThat(actualOrder.getItems(), is(equalTo(expectedOrder.getItems())));
         assertThat(actualOrder.getTotalPrice(), is(equalTo(expectedOrder.getTotalPrice())));
         assertThat(actualOrder.getHistoryEntries(), is(equalTo(expectedOrder.getHistoryEntries())));

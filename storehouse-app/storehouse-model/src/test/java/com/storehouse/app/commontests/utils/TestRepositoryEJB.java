@@ -1,5 +1,6 @@
 package com.storehouse.app.commontests.utils;
 
+import com.storehouse.app.order.model.Order;
 import com.storehouse.app.user.model.User;
 
 import java.util.Arrays;
@@ -19,7 +20,7 @@ public class TestRepositoryEJB {
 
     // Book.class must be defined first to delete, otherwise, there will
     // be database constraint problem.
-    private static final List<Class<?>> ENTITIES_TO_REMOVE = Arrays.asList(User.class);
+    private static final List<Class<?>> ENTITIES_TO_REMOVE = Arrays.asList(Order.class, User.class);
 
     public void deleteAll() {
         for (final Class<?> entityClass : ENTITIES_TO_REMOVE) {
