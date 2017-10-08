@@ -24,10 +24,12 @@ import com.storehouse.app.order.model.Order.OrderStatus;
 import com.storehouse.app.order.model.OrderHistoryEntry;
 import com.storehouse.app.order.services.OrderServices;
 import com.storehouse.app.user.model.Customer;
+import com.storehouse.app.user.services.UserServices;
 
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -50,6 +52,9 @@ public class OrderResourceUTest {
     private OrderServices orderServices;
 
     @Mock
+    private UserServices userServices;
+
+    @Mock
     private UriInfo uriInfo;
 
     private OrderJsonConverter converter;
@@ -64,6 +69,7 @@ public class OrderResourceUTest {
         converter = new OrderJsonConverter();
 
         orderResource.orderServices = orderServices;
+        orderResource.userServices = userServices;
         orderResource.converter = converter;
         orderResource.uriInfo = uriInfo;
         orderResource.securityContext = securityContext;
@@ -191,4 +197,45 @@ public class OrderResourceUTest {
         assertJsonResponseWithFile(response, "ordersAllInOnePage.json");
     }
 
+    @Test
+    public void getOrderStatsInQueue() {
+        when(userServices.findById(1L)).thenReturn(johnDoe());
+        when(orderServices.checkOrderPositionInQueueByCustomerId(1L)).thenReturn(2);
+        when(orderServices.checkOrderWaitTimeInQueueByCustomerId(1L)).thenReturn(10);
+        final Response response = orderResource.getOrderStats(1L);
+        assertThat(response.getStatus(), is(equalTo(HttpCode.OK.getCode())));
+        assertJsonResponseWithFile(response, "orderStatsResult.json");
+    }
+
+    @Test
+    public void getAllOrdersStatsInQueue() {
+        final List<Order> orders = Arrays.asList(orderReservedJohnDoe(), orderReservedEndaKenny(),
+                orderReservedDonaldTrump());
+        long index = 1L;
+        for (final Order order : orders) {
+            order.getCustomer().setId(index++);
+        }
+        when(orderServices.findAllReservedOrders()).thenReturn(orders);
+        when(orderServices.checkOrderPositionInQueueByCustomerId(1L)).thenReturn(1);
+        when(orderServices.checkOrderWaitTimeInQueueByCustomerId(1L)).thenReturn(2);
+        when(orderServices.checkOrderPositionInQueueByCustomerId(2L)).thenReturn(2);
+        when(orderServices.checkOrderWaitTimeInQueueByCustomerId(2L)).thenReturn(4);
+        when(orderServices.checkOrderPositionInQueueByCustomerId(3L)).thenReturn(2);
+        when(orderServices.checkOrderWaitTimeInQueueByCustomerId(3L)).thenReturn(10);
+
+        final Response response = orderResource.getAllOrdersStats();
+        assertThat(response.getStatus(), is(equalTo(HttpCode.OK.getCode())));
+        assertJsonResponseWithFile(response, "allOrdersStatsResult.json");
+    }
+
+    @Test
+    public void cancelOrder() {
+        final Order order1 = orderWithId(orderReservedJohnDoe(), 1L);
+        order1.getCustomer().setId(1L);
+        final PaginatedData<Order> orders = new PaginatedData<>(1, Arrays.asList(order1));
+        when(orderServices.findByFilter((OrderFilter) anyObject())).thenReturn(orders);
+
+        final Response response = orderResource.cancelOrderByCustomerId(1L);
+        assertThat(response.getStatus(), is(equalTo(HttpCode.OK.getCode())));
+    }
 }

@@ -212,4 +212,17 @@ public class OrderServicesUTest {
         assertThat(ordersRetured.getRows().size(), is(equalTo(2)));
     }
 
+    @Test
+    public void checkOrderPositionInQueueByCustomerId() {
+        when(orderRepository.checkOrderPositionInQueueByCustomerId(1L)).thenReturn(2);
+        final Integer position = orderServices.checkOrderPositionInQueueByCustomerId(1L);
+        assertThat(position, is(equalTo(2)));
+    }
+
+    @Test
+    public void checkOrderWaitTimeInQueueByCustomerId() {
+        when(orderRepository.checkOrderWaitTimeInQueueByCustomerId(1L)).thenReturn(10);
+        final Integer waitTime = orderServices.checkOrderWaitTimeInQueueByCustomerId(1L);
+        assertThat(waitTime, is(equalTo(10)));
+    }
 }

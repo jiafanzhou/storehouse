@@ -122,4 +122,22 @@ public class OrderServicesImpl implements OrderServices {
         return orderRepository.findByFilter(orderFilter);
     }
 
+    @Override
+    public Integer checkOrderPositionInQueueByCustomerId(final Long customerId) {
+        return orderRepository.checkOrderPositionInQueueByCustomerId(customerId);
+    }
+
+    @Override
+    public Integer checkOrderWaitTimeInQueueByCustomerId(final Long customerId) {
+        return orderRepository.checkOrderWaitTimeInQueueByCustomerId(customerId);
+    }
+
+    @Override
+    public List<Order> findAllReservedOrders() {
+        if (sessionContext.isCallerInRole(Roles.CUSTOMER.name())) {
+            throw new UserNotAuthorizedException();
+        }
+        return orderRepository.findAllReservedOrders();
+    }
+
 }

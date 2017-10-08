@@ -24,4 +24,9 @@ public interface OrderServices {
 
     PaginatedData<Order> findByFilter(OrderFilter orderFilter);
 
+    Integer checkOrderPositionInQueueByCustomerId(Long customerId);
+
+    Integer checkOrderWaitTimeInQueueByCustomerId(Long customerId);
+
+    List<Order> findAllReservedOrders();
 }

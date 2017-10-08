@@ -26,8 +26,18 @@ public class OrderForTestsRepository {
         order.addItem(2);
         order.setInitialStatus();
         order.calculateTotalPrice();
+        quickSleep();
         order.addHistoryEntry(OrderStatus.DELIVERED);
         return order;
+    }
+
+    private static void quickSleep() {
+        try {
+            Thread.sleep(100);
+        } catch (final InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public static Order orderReservedJohnDoe() {

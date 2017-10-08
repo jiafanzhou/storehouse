@@ -8,6 +8,7 @@ import com.storehouse.app.order.model.Order.OrderStatus;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.ejb.Stateless;
@@ -93,5 +94,17 @@ public class OrderRepository extends GenericRepository<Order> {
         final OrderFilter dateFilter = new OrderFilter();
         dateFilter.setEndDate(orderDate);
         return dateFilter;
+    }
+
+    /**
+     * Find all orders that are reserved in the queue.
+     *
+     * @return all orders that are reserved in the queue.
+     */
+    public List<Order> findAllReservedOrders() {
+        final OrderFilter orderFilter = new OrderFilter();
+        orderFilter.setStatus(OrderStatus.RESERVED);
+        final PaginatedData<Order> data = findByFilter(orderFilter);
+        return data.getRows();
     }
 }

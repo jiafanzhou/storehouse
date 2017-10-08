@@ -1,0 +1,22 @@
+{
+    "paging": {
+        "totalRecords": 3
+    },
+    "entries": [
+        {
+            "customerId": 1,
+            "queueEstimateWaitTime": 2,
+            "queuePosition": 1
+        },
+        {
+            "customerId": 2,
+            "queueEstimateWaitTime": 4,
+            "queuePosition": 2
+        },
+        {
+            "queuePosition": 2,
+            "queueEstimateWaitTime": 10,
+            "customerId": 3
+        }
+    ]
+}

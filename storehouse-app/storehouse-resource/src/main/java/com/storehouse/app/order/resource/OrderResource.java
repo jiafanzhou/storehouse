@@ -2,6 +2,7 @@ package com.storehouse.app.order.resource;
 
 import static com.storehouse.app.common.model.StandardsOperationResults.*;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.storehouse.app.common.exception.FieldNotValidException;
@@ -20,6 +21,7 @@ import com.storehouse.app.common.model.filter.OrderFilter;
 import com.storehouse.app.order.model.Order;
 import com.storehouse.app.order.model.Order.OrderStatus;
 import com.storehouse.app.order.services.OrderServices;
+import com.storehouse.app.user.services.UserServices;
 
 import java.util.List;
 
@@ -52,6 +54,9 @@ public class OrderResource {
 
     @Inject
     OrderServices orderServices;
+
+    @Inject
+    UserServices userServices;
 
     @Inject
     OrderJsonConverter converter;
@@ -97,6 +102,22 @@ public class OrderResource {
     private OrderStatus getStatusFromJson(final String body) {
         final JsonObject jsonObject = JsonReader.readAsJsonObject(body);
         return OrderStatus.valueOf(JsonReader.getStringOrNull(jsonObject, "status"));
+    }
+
+    @GET
+    @Path("/{id}/cancel")
+    @PermitAll
+    public Response cancelOrderByCustomerId(@PathParam("id") final Long customerId) {
+        logger.info("Cancel an order for customerId {}", customerId);
+
+        final OrderFilter filter = new OrderFilter();
+        filter.setCustomerId(customerId);
+        filter.setStatus(OrderStatus.RESERVED);
+        final PaginatedData<Order> data = orderServices.findByFilter(filter);
+
+        // there should be only 1 Order with that clientId
+        final Order order = data.getRows().get(0);
+        return addStatus(order.getId(), String.format("{\"status\": \"%s\"}", OrderStatus.CANCELLED));
     }
 
     @POST
@@ -175,4 +196,55 @@ public class OrderResource {
         return Response.status(HttpCode.OK.getCode())
                 .entity(OperationResultJsonWriter.toJson(OperationResult.success(jsonWithPagingAndEntries))).build();
     }
+
+    // jiafanz: document this
+    @GET
+    @Path("/stats/{id}")
+    // http://localhost:8080/storehouse/api/orders/stats/{id}
+    public Response getOrderStats(@PathParam("id") final Long customerId) {
+        logger.info("Getting order statistics in the queue");
+
+        // need to check if customer if exists
+        // ensure customerId exists ...
+        userServices.findById(customerId);
+
+        ResponseBuilder rb;
+        final Integer position = orderServices.checkOrderPositionInQueueByCustomerId(customerId);
+        final Integer waitTime = orderServices.checkOrderWaitTimeInQueueByCustomerId(customerId);
+        final OperationResult result = OperationResult
+                .success(converter.convertQueueStasToJsonElement(customerId, position, waitTime));
+        rb = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
+        logger.info("Queue position: {}, wait time: {}", position, waitTime);
+        return rb.build();
+    }
+
+    // jiafanz: document this
+    @GET
+    @Path("/stats/all")
+    @RolesAllowed({ "EMPLOYEE", "ADMIN" })
+    // http://localhost:8080/storehouse/api/orders/stats/all
+    public Response getAllOrdersStats() {
+        logger.info("Getting all orders statistics in the queue");
+
+        try {
+            final JsonArray jsonArray = new JsonArray();
+            // jiafanz: document this
+            // jiafanz: this can be greatly improved by performance...
+            for (final Order order : orderServices.findAllReservedOrders()) {
+                final Long customerId = order.getCustomer().getId();
+                final Integer position = orderServices.checkOrderPositionInQueueByCustomerId(customerId);
+                final Integer waitTime = orderServices.checkOrderWaitTimeInQueueByCustomerId(customerId);
+
+                jsonArray.add(converter.convertQueueStasToJsonElement(customerId, position, waitTime));
+            }
+            final JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithJsonArray(jsonArray);
+            return Response.status(HttpCode.OK.getCode())
+                    .entity(OperationResultJsonWriter.toJson(OperationResult.success(jsonWithPagingAndEntries)))
+                    .build();
+        } catch (final UserNotAuthorizedException ex) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
+    }
+
 }
