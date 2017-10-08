@@ -21,10 +21,18 @@ import javax.annotation.Resource;
 import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.jms.JMSConnectionFactory;
+import javax.jms.JMSContext;
+import javax.jms.JMSProducer;
+import javax.jms.Queue;
 import javax.validation.Validator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Stateless
 public class OrderServicesImpl implements OrderServices {
+    private Logger logger = LoggerFactory.getLogger(getClass());
 
     @Inject
     OrderRepository orderRepository;
@@ -39,6 +47,16 @@ public class OrderServicesImpl implements OrderServices {
     // it is just the way how sessionContext is injected.
     @Resource
     SessionContext sessionContext;
+
+    // jiafanz: document this
+
+    // configures our JMS queue
+    @Resource(mappedName = "java:/jms/queue/Orders")
+    private Queue ordersQueue;
+
+    @Inject
+    @JMSConnectionFactory("java:jboss/DefaultJMSConnectionFactory")
+    private JMSContext jmsContext;
 
     private void setCustomerOnOrder(final Order order) {
         // we want to use the customer that is logged in
@@ -55,13 +73,19 @@ public class OrderServicesImpl implements OrderServices {
         // jiafanz: update this
         setCustomerOnOrder(order);
 
-
         // when adding a new order, we need to set the initial status, and calculate the total
         order.setInitialStatus();
         order.calculateTotalPrice();
 
         validateOrder(order);
-        return orderRepository.add(order);
+
+        // part of the XA transaction
+        final Order addedOrder = orderRepository.add(order);
+
+        // sends order event to the queue
+        sendEvent(addedOrder);
+
+        return addedOrder;
     }
 
     @Override
@@ -142,4 +166,24 @@ public class OrderServicesImpl implements OrderServices {
         return orderRepository.findAllReservedOrders();
     }
 
+    /**
+     * Send an event to the queue.
+     *
+     * @param order
+     */
+    private void sendEvent(final Order order) {
+        logger.info("Sending an event to the orders queue");
+        if (jmsContext != null) {
+            final JMSProducer producer = jmsContext.createProducer();
+            if (order.getCustomer().getId() < 1000) {
+                logger.info("This is a priority queue for customerId {}", order.getCustomer().getId());
+                // this is a priority queue
+                producer.setPriority(9); // set this to highest priority
+            } else {
+                logger.info("This is a non-priority queue for customerId {}", order.getCustomer().getId());
+                producer.setPriority(3); // default is 4, we decrease it by 1
+            }
+            producer.send(ordersQueue, order);
+        }
+    }
 }

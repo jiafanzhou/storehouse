@@ -400,6 +400,9 @@ Copy this file to jboss directory.
                     <jms-queue name="DLQ">
                         <entry name="java:/jms/queue/DLQ"/>
                     </jms-queue>
+                    <jms-queue name="Orders">
+                        <entry name="java:/jms/queue/Orders"/>
+                    </jms-queue>
                 </jms-destinations>
             </hornetq-server>
         </subsystem>

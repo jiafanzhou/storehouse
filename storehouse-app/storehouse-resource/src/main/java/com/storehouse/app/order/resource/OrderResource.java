@@ -21,6 +21,7 @@ import com.storehouse.app.common.model.filter.OrderFilter;
 import com.storehouse.app.order.model.Order;
 import com.storehouse.app.order.model.Order.OrderStatus;
 import com.storehouse.app.order.services.OrderServices;
+import com.storehouse.app.order.services.impl.OrderEventReceiver;
 import com.storehouse.app.user.services.UserServices;
 
 import java.util.List;
@@ -28,6 +29,7 @@ import java.util.List;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
+import javax.jms.JMSException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -68,6 +70,9 @@ public class OrderResource {
 
     @Context
     SecurityContext securityContext;
+
+    @Inject
+    OrderEventReceiver orderEventReceiver;
 
     @POST
     @RolesAllowed("CUSTOMER")
@@ -256,4 +261,26 @@ public class OrderResource {
 
     }
 
+    @GET
+    @Path("/consume")
+    @RolesAllowed({ "EMPLOYEE", "ADMIN" })
+    // http://localhost:8080/storehouse/api/orders/consume
+    public Response consumeOrder() {
+        logger.info("Consume orders from the queue");
+        List<Order> orders;
+        try {
+            orders = orderEventReceiver.receiveOrder();
+            for (final Order order : orders) {
+                // check the database if this order is not RESERVED
+                if (orderServices.findById(order.getId()).getCurrentStatus() != OrderStatus.RESERVED) {
+                    logger.info("This order id {} could be cancelled or delivered, ignore", order.getId());
+                }
+            }
+
+            logger.info("Consume orders: {}", orders);
+        } catch (final JMSException e) {
+            e.printStackTrace();
+        }
+        return Response.status(HttpCode.OK.getCode()).build();
+    }
 }
