@@ -30,6 +30,22 @@ public class UserForTestsRepository {
         return user;
     }
 
+    public static User endaKenny() {
+        final User user = new Customer();
+        user.setName("Enda Kenny");
+        user.setEmail("enda.kenny@domain.com");
+        user.setPassword("12345678");
+        return user;
+    }
+
+    public static User donaldTrump() {
+        final User user = new Customer();
+        user.setName("Donald Trump");
+        user.setEmail("donald.trump@domain.com");
+        user.setPassword("12345678");
+        return user;
+    }
+
     public static User admin() {
         final User user = new Employee();
         user.setName("Admin");
@@ -40,12 +56,13 @@ public class UserForTestsRepository {
     }
 
     public static List<User> allUsers() {
-        return Arrays.asList(johnDoe(), marySimpson(), admin());
+        return Arrays.asList(johnDoe(), marySimpson(), endaKenny(), donaldTrump(), admin());
     }
 
     public static List<User> allUsersWithId() {
         return Arrays.asList(userWithIdAndDate(johnDoe(), 1L),
-                userWithIdAndDate(marySimpson(), 2L), userWithIdAndDate(admin(), 3L));
+                userWithIdAndDate(marySimpson(), 2L), userWithIdAndDate(admin(), 3L),
+                userWithIdAndDate(endaKenny(), 4L), userWithIdAndDate(donaldTrump(), 5L));
     }
 
     public static User userWithIdAndDate(final User user, final Long id) {

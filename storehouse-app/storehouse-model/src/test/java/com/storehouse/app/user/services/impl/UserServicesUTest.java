@@ -179,7 +179,7 @@ public class UserServicesUTest {
         when(userRepository.findAll("name")).thenReturn(allUsers());
         final List<User> users = userServices.findAll("name");
         logger.info(users.toString());
-        assertThat(users.size(), is(equalTo(3)));
+        assertThat(users.size(), is(equalTo(5)));
     }
 
     @Test(expected = UserNotFoundException.class)

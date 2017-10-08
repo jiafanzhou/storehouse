@@ -304,12 +304,12 @@ public class UserResourceIntTest {
         // first page
         Response response = resourceClient.resourcePath(PATH_RESOURCE + "?page=0&per_page=2&sort=-name").get();
         assertThat(response.getStatus(), is(equalTo(HttpCode.OK.getCode())));
-        assertResponseContainsTheUsers(response, 3, marySimpson(), johnDoe());
+        assertResponseContainsTheUsers(response, 5, marySimpson(), johnDoe());
 
         // second page
         response = resourceClient.resourcePath(PATH_RESOURCE + "?page=1&per_page=2&sort=-name").get();
         assertThat(response.getStatus(), is(equalTo(HttpCode.OK.getCode())));
-        assertResponseContainsTheUsers(response, 3, admin());
+        assertResponseContainsTheUsers(response, 5, endaKenny(), donaldTrump());
     }
 
 }

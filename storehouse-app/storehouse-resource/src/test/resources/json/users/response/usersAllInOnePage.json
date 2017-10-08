@@ -1,6 +1,6 @@
 {
     "paging": {
-        "totalRecords": 3
+        "totalRecords": 5
     },
     "entries": [
         {
@@ -31,6 +31,26 @@
             "roles": [
                 "EMPLOYEE",
                 "ADMIN"
+            ],
+            "createdAt": "2017-09-07T08:00:00Z"
+        },
+        {
+            "id": 4,
+            "name": "Enda Kenny",
+            "email": "enda.kenny@domain.com",
+            "type": "CUSTOMER",
+            "roles": [
+                "CUSTOMER"
+            ],
+            "createdAt": "2017-09-07T08:00:00Z"
+        },
+        {
+            "id": 5,
+            "name": "Donald Trump",
+            "email": "donald.trump@domain.com",
+            "type": "CUSTOMER",
+            "roles": [
+                "CUSTOMER"
             ],
             "createdAt": "2017-09-07T08:00:00Z"
         }

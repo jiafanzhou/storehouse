@@ -11,6 +11,9 @@
         <class>com.storehouse.app.user.model.User</class>
         <class>com.storehouse.app.user.model.Customer</class>
         <class>com.storehouse.app.user.model.Employee</class>
+        <class>com.storehouse.app.order.model.Order</class>
+        <class>com.storehouse.app.order.model.OrderItem</class>
+        <class>com.storehouse.app.order.model.OrderHistoryEntry</class>
 
         <properties>
             <property name="hibernate.show_sql" value="true" />
