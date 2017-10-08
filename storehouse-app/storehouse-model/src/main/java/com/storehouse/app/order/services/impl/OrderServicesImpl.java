@@ -52,7 +52,9 @@ public class OrderServicesImpl implements OrderServices {
 
     @Override
     public Order add(final Order order) {
+        // jiafanz: update this
         setCustomerOnOrder(order);
+
 
         // when adding a new order, we need to set the initial status, and calculate the total
         order.setInitialStatus();

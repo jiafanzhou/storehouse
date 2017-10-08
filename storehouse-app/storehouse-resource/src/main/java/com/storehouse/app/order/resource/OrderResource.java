@@ -206,15 +206,24 @@ public class OrderResource {
 
         // need to check if customer if exists
         // ensure customerId exists ...
-        userServices.findById(customerId);
+
+        try {
+            userServices.findById(customerId);
+        } catch (final UserNotFoundException ex) {
+            logger.error("Customer cannot be found for clientId", ex);
+            final HttpCode httpCode = HttpCode.VALIDATION_ERROR;
+            final OperationResult result = getOperationResultDependencyNotFound(RM, "customer");
+            return Response.status(httpCode.getCode()).entity(OperationResultJsonWriter.toJson(result)).build();
+        }
 
         ResponseBuilder rb;
         final Integer position = orderServices.checkOrderPositionInQueueByCustomerId(customerId);
         final Integer waitTime = orderServices.checkOrderWaitTimeInQueueByCustomerId(customerId);
         final OperationResult result = OperationResult
-                .success(converter.convertQueueStasToJsonElement(customerId, position, waitTime));
-        rb = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
-        logger.info("Queue position: {}, wait time: {}", position, waitTime);
+                .success(converter.convertQueueStatsToJsonElement(customerId, position, waitTime));
+        final String tmp = OperationResultJsonWriter.toJson(result);
+        rb = Response.status(HttpCode.OK.getCode()).entity(tmp);
+        logger.info("Queue position: {}, wait time: {}, for customerId {}", position, waitTime, customerId);
         return rb.build();
     }
 
@@ -235,7 +244,7 @@ public class OrderResource {
                 final Integer position = orderServices.checkOrderPositionInQueueByCustomerId(customerId);
                 final Integer waitTime = orderServices.checkOrderWaitTimeInQueueByCustomerId(customerId);
 
-                jsonArray.add(converter.convertQueueStasToJsonElement(customerId, position, waitTime));
+                jsonArray.add(converter.convertQueueStatsToJsonElement(customerId, position, waitTime));
             }
             final JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithJsonArray(jsonArray);
             return Response.status(HttpCode.OK.getCode())

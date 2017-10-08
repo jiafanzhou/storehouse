@@ -4,7 +4,6 @@ import static com.storehouse.app.commontests.order.OrderForTestsRepository.*;
 
 import com.storehouse.app.common.utils.DateUtils;
 import com.storehouse.app.order.model.Order;
-import com.storehouse.app.order.model.Order.OrderStatus;
 import com.storehouse.app.order.services.OrderServices;
 
 import javax.ejb.Stateless;
@@ -34,6 +33,9 @@ public class OrderResourceDB {
         final Order order2 = normalizeDependencies(orderReservedEndaKenny(), em);
         order2.setCreatedAt(DateUtils.getAsDateTime("2017-10-11T10:00:00Z"));
         orderServices.add(order2);
-        orderServices.updateStatus(order2.getId(), OrderStatus.CANCELLED);
+        final Order order3 = normalizeDependencies(orderReservedDonaldTrump(), em);
+        order3.setCreatedAt(DateUtils.getAsDateTime("2017-10-12T10:00:00Z"));
+        orderServices.add(order3);
+        // orderServices.updateStatus(order2.getId(), OrderStatus.CANCELLED);
     }
 }

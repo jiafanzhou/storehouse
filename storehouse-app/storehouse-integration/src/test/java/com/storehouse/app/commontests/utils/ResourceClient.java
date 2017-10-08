@@ -15,8 +15,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 /**
- * 25.Integration tests - Preparing the basics-2962378.mp4
- *
  * @author ejiafzh
  *
  */

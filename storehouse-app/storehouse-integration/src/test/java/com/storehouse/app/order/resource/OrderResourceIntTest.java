@@ -197,6 +197,21 @@ public class OrderResourceIntTest {
         final Response response = resourceClient.resourcePath(
                 PATH_RESOURCE + "?page=0&per_page=3&startDate=2017-10-01T10:00:00Z&endDate=2017-11-07T10:00:00Z").get();
         assertThat(response.getStatus(), is(equalTo(HttpCode.OK.getCode())));
-        assertResponseContainsTheOrdersStatus(response, 2, OrderStatus.CANCELLED, OrderStatus.RESERVED);
+        assertResponseContainsTheOrdersStatus(response, 3, OrderStatus.RESERVED, OrderStatus.RESERVED,
+                OrderStatus.RESERVED);
+    }
+
+    @Test
+    @RunAsClient
+    public void getAllOrderStatus() {
+        resourceClient.user(johnDoe());
+        resourceClient.resourcePath("DB/" + PATH_RESOURCE).postWithContent("");
+
+        resourceClient.user(admin());
+
+        final Response response = resourceClient.resourcePath(PATH_RESOURCE + "/stats/all").get();
+        assertThat(response.getStatus(), is(equalTo(HttpCode.OK.getCode())));
+        final JsonObject result = JsonReader.readAsJsonObject(response.readEntity(String.class));
+        assertThat(result, is(notNullValue()));
     }
 }

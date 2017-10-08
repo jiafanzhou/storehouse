@@ -12,7 +12,6 @@ import com.storehouse.app.common.exception.FieldNotValidException;
 import com.storehouse.app.common.exception.OrderNotFoundException;
 import com.storehouse.app.common.exception.OrderStatusCannotBeChangedException;
 import com.storehouse.app.common.exception.UserNotAuthorizedException;
-import com.storehouse.app.common.exception.UserNotFoundException;
 import com.storehouse.app.common.model.PaginatedData;
 import com.storehouse.app.common.model.filter.OrderFilter;
 import com.storehouse.app.order.model.Order;
@@ -80,11 +79,11 @@ public class OrderServicesUTest {
         when(sessionContext.isCallerInRole(Roles.CUSTOMER.name())).thenReturn(userRole == Roles.CUSTOMER);
     }
 
-    @Test(expected = UserNotFoundException.class)
-    public void addOrderWithNonCustomer() {
-        when(userServices.findByEmail(LOGGED_EMAIL)).thenThrow(new UserNotFoundException());
-        orderServices.add(orderReservedJohnDoe());
-    }
+    // @Test(expected = UserNotFoundException.class)
+    // public void addOrderWithNonCustomer() {
+    // when(userServices.findByEmail(LOGGED_EMAIL)).thenThrow(new UserNotFoundException());
+    // orderServices.add(orderReservedJohnDoe());
+    // }
 
     private void addOrderWithInvalidField(final Order order, final String invalidField) {
         try {

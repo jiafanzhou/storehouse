@@ -48,7 +48,7 @@ public class Order implements Serializable {
     // have 1 product, once we have multiple product, we can add more items
     @NotNull
     @Valid // this annotation ensures all elements will be validated against
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "storehouse_order_item", joinColumns = @JoinColumn(name = "order_id"))
     @Size(min = 1, max = 1)
     private Set<OrderItem> items;
@@ -64,7 +64,7 @@ public class Order implements Serializable {
     // track the history of the order
     @NotNull
     @Valid // this annotation ensures all elements will be validated against
-    @ElementCollection(fetch = FetchType.LAZY)
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "storehouse_order_orderhistory", joinColumns = @JoinColumn(name = "order_id"))
     @Size(min = 1)
     private Set<OrderHistoryEntry> historyEntries;
