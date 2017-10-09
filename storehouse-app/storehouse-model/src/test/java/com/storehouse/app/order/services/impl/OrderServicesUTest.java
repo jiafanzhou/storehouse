@@ -96,9 +96,10 @@ public class OrderServicesUTest {
 
     @Test
     public void addOrderWithNullQuantityItem() {
-        when(userServices.findByEmail(LOGGED_EMAIL)).thenReturn(johnDoe());
+        when(userServices.findByEmail(LOGGED_EMAIL)).thenReturn(userWithIdAndDate(johnDoe(), 1L));
 
         final Order order = orderReservedJohnDoe();
+        order.getCustomer().setId(1L);
         order.getItems().iterator().next().setQuantity(null);
 
         addOrderWithInvalidField(order, "items[].quantity"); // items[] => collection
@@ -106,9 +107,10 @@ public class OrderServicesUTest {
 
     @Test
     public void addOrderWithoutItems() {
-        when(userServices.findByEmail(LOGGED_EMAIL)).thenReturn(johnDoe());
+        when(userServices.findByEmail(LOGGED_EMAIL)).thenReturn(userWithIdAndDate(johnDoe(), 1L));
 
         final Order order = orderReservedJohnDoe();
+        order.getCustomer().setId(1L);
         order.setItems(null);
 
         addOrderWithInvalidField(order, "items"); // items[] => collection
@@ -116,11 +118,13 @@ public class OrderServicesUTest {
 
     @Test
     public void addValidOrder() {
-        when(userServices.findByEmail(LOGGED_EMAIL)).thenReturn(johnDoe());
+        when(userServices.findByEmail(LOGGED_EMAIL)).thenReturn(userWithIdAndDate(johnDoe(), 1L));
         when(orderRepository.add(orderEqual(orderReservedJohnDoe())))
                 .thenReturn(orderWithId(orderReservedJohnDoe(), 1L));
 
-        final Order addedOrder = orderServices.add(orderReservedJohnDoe());
+        final Order order = orderReservedJohnDoe();
+        order.getCustomer().setId(1L);
+        final Order addedOrder = orderServices.add(order);
         logger.info("jiafanz: {}", addedOrder);
         assertThat(addedOrder, is(notNullValue()));
         assertThat(addedOrder.getId(), is(equalTo(1L)));

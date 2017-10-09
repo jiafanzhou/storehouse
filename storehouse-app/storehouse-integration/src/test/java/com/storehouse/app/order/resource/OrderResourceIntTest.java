@@ -13,12 +13,14 @@ import com.storehouse.app.common.json.JsonWriter;
 import com.storehouse.app.common.model.HttpCode;
 import com.storehouse.app.commontests.utils.ArquillianTestUtils;
 import com.storehouse.app.commontests.utils.IntegrationTestUtils;
+import com.storehouse.app.commontests.utils.JsonTestUtils;
 import com.storehouse.app.commontests.utils.ResourceClient;
 import com.storehouse.app.commontests.utils.ResourceDefinitions;
 import com.storehouse.app.order.model.Order;
 import com.storehouse.app.order.model.Order.OrderStatus;
 import com.storehouse.app.order.model.OrderHistoryEntry;
 import com.storehouse.app.order.model.OrderItem;
+import com.storehouse.app.user.model.User;
 
 import java.net.URL;
 
@@ -131,7 +133,8 @@ public class OrderResourceIntTest {
     @RunAsClient // 2 ways of running tests (a. within container b. as a client)
     public void addValidOrderAndFindIt() {
         resourceClient.user(johnDoe());
-        final Long orderId = addOrderAndGetId(orderReservedJohnDoe());
+        final Order order = loadOrderCustomerIdFromRest(johnDoe(), orderReservedJohnDoe());
+        final Long orderId = addOrderAndGetId(order);
         findOrderAndAssertResposneWithOrder(orderId, orderReservedJohnDoe());
     }
 
@@ -148,7 +151,8 @@ public class OrderResourceIntTest {
     @RunAsClient
     public void addStatusDeliveredNotAsEmployee() {
         resourceClient.user(johnDoe());
-        final Long orderId = addOrderAndGetId(orderReservedJohnDoe());
+        final Order order = loadOrderCustomerIdFromRest(johnDoe(), orderReservedJohnDoe());
+        final Long orderId = addOrderAndGetId(order);
         final Response response = resourceClient.resourcePath(PATH_RESOURCE + "/" + orderId + "/status")
                 .postWithContent(getJsonWithOrderStatus(OrderStatus.DELIVERED));
         assertThat(response.getStatus(), is(equalTo(HttpCode.FORBIDDEN.getCode())));
@@ -158,7 +162,10 @@ public class OrderResourceIntTest {
     @RunAsClient
     public void addStatusDeliveredAsEmployee() {
         resourceClient.user(johnDoe());
-        final Long orderId = addOrderAndGetId(orderReservedJohnDoe());
+
+        final Order order = loadOrderCustomerIdFromRest(johnDoe(), orderReservedJohnDoe());
+
+        final Long orderId = addOrderAndGetId(order);
         final Response response = resourceClient.user(admin()).resourcePath(PATH_RESOURCE + "/" + orderId + "/status")
                 .postWithContent(getJsonWithOrderStatus(OrderStatus.DELIVERED));
         assertThat(response.getStatus(), is(equalTo(HttpCode.OK.getCode())));
@@ -166,6 +173,15 @@ public class OrderResourceIntTest {
         final Order expectedOrder = orderReservedJohnDoe();
         expectedOrder.addHistoryEntry(OrderStatus.DELIVERED);
         findOrderAndAssertResposneWithOrder(orderId, expectedOrder);
+    }
+
+    private Order loadOrderCustomerIdFromRest(final User user, final Order order) {
+        final Response response = resourceClient.resourcePath(USER_PATH_RESOURCE + "/authenticate").postWithContent(
+                getJsonWithEmailAndPassword(user.getEmail(), user.getPassword()));
+        final String bodyResponse = response.readEntity(String.class);
+        final Long customerId = JsonTestUtils.getIdFromJson(bodyResponse);
+        order.getCustomer().setId(customerId);
+        return order;
     }
 
     @Test
@@ -191,7 +207,13 @@ public class OrderResourceIntTest {
     @RunAsClient
     public void findByFilterPaginationByDates() {
         resourceClient.user(johnDoe());
-        resourceClient.resourcePath("DB/" + PATH_RESOURCE).postWithContent("");
+        resourceClient.resourcePath("DB/" + PATH_RESOURCE + "/john").postWithContent("");
+
+        resourceClient.user(endaKenny());
+        resourceClient.resourcePath("DB/" + PATH_RESOURCE + "/enda").postWithContent("");
+
+        resourceClient.user(donaldTrump());
+        resourceClient.resourcePath("DB/" + PATH_RESOURCE + "/donald").postWithContent("");
 
         resourceClient.user(admin());
         final Response response = resourceClient.resourcePath(

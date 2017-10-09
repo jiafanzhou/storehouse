@@ -1,5 +1,6 @@
 package com.storehouse.app.order.services.impl;
 
+import com.storehouse.app.common.exception.InvalidClientIdInOrder;
 import com.storehouse.app.common.exception.OrderNotFoundException;
 import com.storehouse.app.common.exception.OrderStatusCannotBeChangedException;
 import com.storehouse.app.common.exception.UserNotAuthorizedException;
@@ -48,7 +49,7 @@ public class OrderServicesImpl implements OrderServices {
     @Resource
     SessionContext sessionContext;
 
-    // jiafanz: document this
+    // jiafanz: document this queue
 
     // configures our JMS queue
     @Resource(mappedName = "java:/jms/queue/Orders")
@@ -58,10 +59,41 @@ public class OrderServicesImpl implements OrderServices {
     @JMSConnectionFactory("java:jboss/DefaultJMSConnectionFactory")
     private JMSContext jmsContext;
 
+    /**
+     * A customer must login first with his/her email as principle to place a
+     * new order. We set the customer from the logged in user if and only if
+     * the clientId in the order matches the logged in customer ID.
+     *
+     * @param order
+     *            to be placed.
+     */
     private void setCustomerOnOrder(final Order order) {
-        // we want to use the customer that is logged in
         final User user = userServices.findByEmail(sessionContext.getCallerPrincipal().getName());
+        validateOrderClientId(order, user);
         order.setCustomer((Customer) user);
+    }
+
+    /**
+     * We also validate that logged in credential has the right
+     * clientId passed in from the order.
+     *
+     * @param order
+     *            to be placed
+     * @param user
+     *            the customer to be logged in.
+     */
+    private void validateOrderClientId(final Order order, final User user) {
+        final Long orderCustomerId = order.getCustomer().getId();
+        if (orderCustomerId == null) {
+            final String strTemplate = "ClientId in order must not be null.";
+            throw new InvalidClientIdInOrder(strTemplate);
+        }
+
+        final Long userId = user.getId();
+        if (userId != orderCustomerId) {
+            final String strTemplate = "ClientId %d in order does not match the logged in customer id %d.";
+            throw new InvalidClientIdInOrder(String.format(strTemplate, orderCustomerId, userId));
+        }
     }
 
     private void validateOrder(final Order order) {

@@ -26,16 +26,26 @@ public class OrderResourceDB {
     private EntityManager em;
 
     @POST
-    public void addAll() {
+    @Path("/john")
+    public void addJohnDoeOrder() {
         final Order order1 = normalizeDependencies(orderReservedJohnDoe(), em);
         order1.setCreatedAt(DateUtils.getAsDateTime("2017-10-10T10:00:00Z"));
         orderServices.add(order1);
+    }
+
+    @POST
+    @Path("/enda")
+    public void addEndaKennyOrder() {
         final Order order2 = normalizeDependencies(orderReservedEndaKenny(), em);
         order2.setCreatedAt(DateUtils.getAsDateTime("2017-10-11T10:00:00Z"));
         orderServices.add(order2);
+    }
+
+    @POST
+    @Path("/donald")
+    public void addDonaldTrumpOrder() {
         final Order order3 = normalizeDependencies(orderReservedDonaldTrump(), em);
         order3.setCreatedAt(DateUtils.getAsDateTime("2017-10-12T10:00:00Z"));
         orderServices.add(order3);
-        // orderServices.updateStatus(order2.getId(), OrderStatus.CANCELLED);
     }
 }

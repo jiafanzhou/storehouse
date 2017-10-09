@@ -6,6 +6,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.storehouse.app.common.exception.FieldNotValidException;
+import com.storehouse.app.common.exception.InvalidClientIdInOrder;
 import com.storehouse.app.common.exception.OrderNotFoundException;
 import com.storehouse.app.common.exception.OrderStatusCannotBeChangedException;
 import com.storehouse.app.common.exception.UserNotAuthorizedException;
@@ -75,7 +76,7 @@ public class OrderResource {
     OrderEventReceiver orderEventReceiver;
 
     @POST
-    @RolesAllowed("CUSTOMER")
+    @RolesAllowed("CUSTOMER") // jiafanz: document this only customer can add order
     public Response add(final String body) {
         logger.info("Adding a new order with body {}", body);
 
@@ -94,6 +95,10 @@ public class OrderResource {
             result = getOperationResultInvalidField(RM, ex);
         } catch (final UserNotFoundException ex) {
             logger.error("Customer cannot be found for this order", ex);
+            httpCode = HttpCode.VALIDATION_ERROR;
+            result = getOperationResultDependencyNotFound(RM, "customer");
+        } catch (final InvalidClientIdInOrder ex) {
+            logger.error("Invalid customer clientId", ex);
             httpCode = HttpCode.VALIDATION_ERROR;
             result = getOperationResultDependencyNotFound(RM, "customer");
         }
