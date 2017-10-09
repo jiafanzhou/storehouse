@@ -289,6 +289,7 @@ public class OrderResource {
                     // make this order as PENDING state
                     try {
                         orderServices.updateStatus(order.getId(), OrderStatus.PENDING);
+                        logger.info("order id {} status changed to Pending", order.getId());
                     } catch (final Exception ex) {
                         logger.error("Failed to change the orderId {} to Pending state", order.getId());
                     }
