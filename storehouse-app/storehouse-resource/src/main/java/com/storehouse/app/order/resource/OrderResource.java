@@ -265,21 +265,33 @@ public class OrderResource {
     @Path("/consume")
     @RolesAllowed({ "EMPLOYEE", "ADMIN" })
     // http://localhost:8080/storehouse/api/orders/consume
+    // jiafanz: document all the REST endpoints.
+    // jiafanz: optimize this method
     public Response consumeOrder() {
         logger.info("Consume orders from the queue");
         List<Order> orders;
         try {
             orders = orderEventReceiver.receiveOrder();
+            logger.info("Consume orders: {}", orders);
             for (final Order order : orders) {
                 // check the database if this order is not RESERVED
-                if (orderServices.findById(order.getId()).getCurrentStatus() != OrderStatus.RESERVED) {
-                    logger.info("This order id {} could be cancelled or delivered, ignore", order.getId());
-                }
-            }
+                final OrderStatus currentStatus = orderServices.findById(order.getId()).getCurrentStatus();
+                if (currentStatus == OrderStatus.RESERVED) {
+                    logger.info("Order {} is RESERVED, we will deliver it now", order);
 
-            logger.info("Consume orders: {}", orders);
-        } catch (final JMSException e) {
-            e.printStackTrace();
+                    // delivery
+
+                    // make this order as PENDING state
+                    try {
+                        orderServices.updateStatus(order.getId(), OrderStatus.PENDING);
+                    } catch (final Exception ex) {
+                        logger.error("Failed to change the orderId {} to Pending state", order.getId());
+                    }
+                } else
+                    logger.info("This order id {} could be cancelled or delivered, ignore", order.getId());
+            }
+        } catch (final JMSException ex) {
+            ex.printStackTrace();
         }
         return Response.status(HttpCode.OK.getCode()).build();
     }

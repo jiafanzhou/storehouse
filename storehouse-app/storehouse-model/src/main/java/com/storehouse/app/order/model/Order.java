@@ -58,7 +58,7 @@ public class Order implements Serializable {
 
     // jiafanz: document this
     public enum OrderStatus {
-        RESERVED, DELIVERED, CANCELLED
+        RESERVED, PENDING, DELIVERED, CANCELLED
     }
 
     // track the history of the order
