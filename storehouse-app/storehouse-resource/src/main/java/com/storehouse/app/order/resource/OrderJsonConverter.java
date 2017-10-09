@@ -119,4 +119,14 @@ public class OrderJsonConverter implements EntityJsonConverter<Order> {
         return jsonObject;
     }
 
+    public JsonElement convertDeliveryToJsonElement(final Long customerId, final String customerName,
+            final String customerEmail, final Integer quantity) {
+        final JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("customerId", customerId);
+        jsonObject.addProperty("customerName", customerName);
+        jsonObject.addProperty("customerEmail", customerEmail);
+        jsonObject.addProperty("deliveryQuantity", quantity);
+        return jsonObject;
+    }
+
 }

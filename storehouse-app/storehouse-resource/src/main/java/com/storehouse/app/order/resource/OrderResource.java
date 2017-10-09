@@ -133,8 +133,12 @@ public class OrderResource {
         final PaginatedData<Order> data = orderServices.findByFilter(filter);
 
         // there should be only 1 Order with that clientId
-        final Order order = data.getRows().get(0);
-        return addStatus(order.getId(), String.format("{\"status\": \"%s\"}", OrderStatus.CANCELLED));
+        if (data.getNumberOfRows() == 0) {
+            return Response.status(HttpCode.NOT_FOUND.getCode()).build();
+        } else {
+            final Order order = data.getRows().get(0);
+            return addStatus(order.getId(), String.format("{\"status\": \"%s\"}", OrderStatus.CANCELLED));
+        }
     }
 
     @POST
@@ -296,6 +300,8 @@ public class OrderResource {
     // jiafanz: optimize this method
     public Response consumeOrder() {
         logger.info("Consume orders from the queue");
+
+        final JsonArray jsonArray = new JsonArray();
         List<Order> orders;
         try {
             orders = orderEventReceiver.receiveOrder();
@@ -314,10 +320,23 @@ public class OrderResource {
                         logger.info("order id {} status changed to Pending", order.getId());
                     } catch (final Exception ex) {
                         logger.error("Failed to change the orderId {} to Pending state", order.getId());
+                        throw ex;
                     }
+
+                    final Long customerId = order.getCustomer().getId();
+                    final String customerName = order.getCustomer().getName();
+                    final String customerEmail = order.getCustomer().getEmail();
+                    final Integer quantity = order.calculateTotalQuantity();
+                    jsonArray.add(converter.convertDeliveryToJsonElement(customerId,
+                            customerName, customerEmail, quantity));
                 } else
                     logger.info("This order id {} could be cancelled or delivered, ignore", order.getId());
             }
+            // construct the JSON response
+            final JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithJsonArray(jsonArray);
+            return Response.status(HttpCode.OK.getCode())
+                    .entity(OperationResultJsonWriter.toJson(OperationResult.success(jsonWithPagingAndEntries)))
+                    .build();
         } catch (final JMSException ex) {
             ex.printStackTrace();
         }
