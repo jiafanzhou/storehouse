@@ -8,7 +8,6 @@ import com.google.gson.JsonSyntaxException;
 import com.storehouse.app.common.exception.InvalidJsonException;
 
 /**
- * 22.REST endpoints - Starting the implementation-2962376.mp4
  *
  * @author ejiafzh
  *

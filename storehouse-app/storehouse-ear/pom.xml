@@ -1,8 +1,10 @@
 <!--
 (1) To start JBoss manually: 
-$JBOSS_HOME/bin/standalone.sh -c=standalone-full.xml 
+$JBOSS_HOME/bin/standalone.sh -c=standalone-full.xml
+
 (2) Copy the ear artifact: 
-cp library-app/storehouse-ear/target/storehouse-ear-0.0.1-SNAPSHOT.ear /opt/wildfly-8.1.0.Final/standalone/deployments/
+cp storehouse-app/storehouse-ear/target/storehouse-ear-0.0.1-SNAPSHOT.ear ${JBOSS_HOME}/standalone/deployments/
+
 (3) Then go to chrome postman extension:
 - get (getall): http://localhost:8080/storehouse/api/users
 - post (add): http://localhost:8080/storehouse/api/users

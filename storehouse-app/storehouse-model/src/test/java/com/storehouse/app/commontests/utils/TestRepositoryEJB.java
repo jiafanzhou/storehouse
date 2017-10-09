@@ -18,7 +18,7 @@ public class TestRepositoryEJB {
     @PersistenceContext
     private EntityManager em;
 
-    // Book.class must be defined first to delete, otherwise, there will
+    // Order.class must be defined first to delete, otherwise, there will
     // be database constraint problem.
     private static final List<Class<?>> ENTITIES_TO_REMOVE = Arrays.asList(Order.class, User.class);
 
