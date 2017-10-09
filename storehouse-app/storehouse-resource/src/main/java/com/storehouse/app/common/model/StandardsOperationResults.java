@@ -26,4 +26,10 @@ public final class StandardsOperationResults {
         return OperationResult.error(rm.getKeyResourceInvalidField(invalidFieldName),
                 rm.getMsgResourceDepNotFound(invalidFieldName));
     }
+
+    public static OperationResult getOperationResultClientOrderAlreadyExists(final ResourceMessage rm,
+            final String invalidFieldName, final Long clientId) {
+        return OperationResult.error(rm.getKeyResourceInvalidField(invalidFieldName),
+                "There is already an order in the queue for this ClientID " + clientId);
+    }
 }

@@ -1,6 +1,7 @@
 package com.storehouse.app.order.services.impl;
 
 import com.storehouse.app.common.exception.InvalidClientIdInOrder;
+import com.storehouse.app.common.exception.OrderAlreadyExistingException;
 import com.storehouse.app.common.exception.OrderNotFoundException;
 import com.storehouse.app.common.exception.OrderStatusCannotBeChangedException;
 import com.storehouse.app.common.exception.UserNotAuthorizedException;
@@ -70,7 +71,17 @@ public class OrderServicesImpl implements OrderServices {
     private void setCustomerOnOrder(final Order order) {
         final User user = userServices.findByEmail(sessionContext.getCallerPrincipal().getName());
         validateOrderClientId(order, user);
+        validateOneOrderPerClient(order.getCustomer().getId());
         order.setCustomer((Customer) user);
+    }
+
+    // validate that a client can only place 1 order
+    private void validateOneOrderPerClient(final Long clientId) {
+        // if the clientId has been in the db which current_status is RESERVED
+        if (orderRepository.checkIfOrderExistsAlready(clientId)) {
+            final String strTemplate = "Order for clientId %s already exists";
+            throw new OrderAlreadyExistingException(String.format(strTemplate, clientId));
+        }
     }
 
     /**

@@ -7,6 +7,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.storehouse.app.common.exception.FieldNotValidException;
 import com.storehouse.app.common.exception.InvalidClientIdInOrder;
+import com.storehouse.app.common.exception.OrderAlreadyExistingException;
 import com.storehouse.app.common.exception.OrderNotFoundException;
 import com.storehouse.app.common.exception.OrderStatusCannotBeChangedException;
 import com.storehouse.app.common.exception.UserNotAuthorizedException;
@@ -23,6 +24,7 @@ import com.storehouse.app.order.model.Order;
 import com.storehouse.app.order.model.Order.OrderStatus;
 import com.storehouse.app.order.services.OrderServices;
 import com.storehouse.app.order.services.impl.OrderEventReceiver;
+import com.storehouse.app.user.model.User;
 import com.storehouse.app.user.services.UserServices;
 
 import java.util.List;
@@ -101,6 +103,11 @@ public class OrderResource {
             logger.error("Invalid customer clientId", ex);
             httpCode = HttpCode.VALIDATION_ERROR;
             result = getOperationResultDependencyNotFound(RM, "customer");
+        } catch (final OrderAlreadyExistingException ex) {
+            logger.error("Invalid customer clientId", ex);
+            httpCode = HttpCode.VALIDATION_ERROR;
+            result = getOperationResultClientOrderAlreadyExists(RM, "customer",
+                    order.getCustomer().getId());
         }
 
         logger.info("Returning the operation result after adding order: {}", result);
@@ -217,8 +224,10 @@ public class OrderResource {
         // need to check if customer if exists
         // ensure customerId exists ...
 
+        User customer = null;
+
         try {
-            userServices.findById(customerId);
+            customer = userServices.findById(customerId);
         } catch (final UserNotFoundException ex) {
             logger.error("Customer cannot be found for clientId", ex);
             final HttpCode httpCode = HttpCode.VALIDATION_ERROR;
@@ -229,8 +238,15 @@ public class OrderResource {
         ResponseBuilder rb;
         final Integer position = orderServices.checkOrderPositionInQueueByCustomerId(customerId);
         final Integer waitTime = orderServices.checkOrderWaitTimeInQueueByCustomerId(customerId);
+
+        if (position == -1 || waitTime == -1) {
+            logger.error("Customer {} does not have an order yet", customerId);
+            return Response.status(HttpCode.NOT_FOUND.getCode()).build();
+        }
+
         final OperationResult result = OperationResult
-                .success(converter.convertQueueStatsToJsonElement(customerId, position, waitTime));
+                .success(converter.convertQueueStatsToJsonElement(customerId, customer.getName(),
+                        position, waitTime));
         final String tmp = OperationResultJsonWriter.toJson(result);
         rb = Response.status(HttpCode.OK.getCode()).entity(tmp);
         logger.info("Queue position: {}, wait time: {}, for customerId {}", position, waitTime, customerId);
@@ -254,7 +270,13 @@ public class OrderResource {
                 final Integer position = orderServices.checkOrderPositionInQueueByCustomerId(customerId);
                 final Integer waitTime = orderServices.checkOrderWaitTimeInQueueByCustomerId(customerId);
 
-                jsonArray.add(converter.convertQueueStatsToJsonElement(customerId, position, waitTime));
+                if (position == -1 || waitTime == -1) {
+                    logger.error("Customer {} does not have an order yet", customerId);
+                    return Response.status(HttpCode.NOT_FOUND.getCode()).build();
+                }
+
+                jsonArray.add(converter.convertQueueStatsToJsonElement(customerId,
+                        order.getCustomer().getName(), position, waitTime));
             }
             final JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithJsonArray(jsonArray);
             return Response.status(HttpCode.OK.getCode())

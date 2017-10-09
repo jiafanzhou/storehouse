@@ -15,8 +15,13 @@ import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Stateless
 public class OrderRepository extends GenericRepository<Order> {
+    private Logger logger = LoggerFactory.getLogger(getClass());
+
     @PersistenceContext
     EntityManager em;
 
@@ -69,16 +74,25 @@ public class OrderRepository extends GenericRepository<Order> {
 
     // jiafanz: document this
     public Integer checkOrderPositionInQueueByCustomerId(final Long customerId) {
-        final OrderFilter dateFilter = initialiseOrderFilter(customerId);
-        return findByFilter(dateFilter).getNumberOfRows();
+        logger.info("checkOrderPostionInQueueByCustomerId invokeed, customerId {}", customerId);
+        final OrderFilter dataFilter = initialiseOrderFilter(customerId);
+
+        if (dataFilter == null) {
+            return -1;
+        }
+        logger.info("dataFilter {}", dataFilter);
+        return findByFilter(dataFilter).getNumberOfRows();
     }
 
     // jiafanz: document this
     public Integer checkOrderWaitTimeInQueueByCustomerId(final Long customerId) {
-        final OrderFilter dateFilter = initialiseOrderFilter(customerId);
+        final OrderFilter dataFilter = initialiseOrderFilter(customerId);
+        if (dataFilter == null) {
+            return -1;
+        }
 
         int totalQuantity = 0;
-        for (final Order order : findByFilter(dateFilter).getRows()) {
+        for (final Order order : findByFilter(dataFilter).getRows()) {
             totalQuantity += order.calculateTotalQuantity();
         }
         return totalQuantity;
@@ -89,11 +103,26 @@ public class OrderRepository extends GenericRepository<Order> {
         orderFilter.setCustomerId(customerId);
         orderFilter.setStatus(OrderStatus.RESERVED);
         final PaginatedData<Order> data = findByFilter(orderFilter);
+
+        // if there is no data, it means there is no order in db for such customer
+        // whose current status is reserved.
+        if (data.getNumberOfRows() == 0) {
+            return null;
+        }
         final Date orderDate = data.getRow(0).getCreatedAt();
 
         final OrderFilter dateFilter = new OrderFilter();
+        dateFilter.setStatus(OrderStatus.RESERVED);
         dateFilter.setEndDate(orderDate);
         return dateFilter;
+    }
+
+    public Boolean checkIfOrderExistsAlready(final Long clientId) {
+        final OrderFilter orderFilter = new OrderFilter();
+        orderFilter.setStatus(OrderStatus.RESERVED);
+        orderFilter.setCustomerId(clientId);
+        final PaginatedData<Order> data = findByFilter(orderFilter);
+        return !data.getRows().isEmpty();
     }
 
     /**

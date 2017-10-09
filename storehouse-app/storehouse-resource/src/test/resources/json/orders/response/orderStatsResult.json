@@ -1,5 +1,6 @@
 {
 	"customerId": 1,
+	"customerName": "John Doe",
 	"queuePosition": 2,
 	"queueEstimateWaitTime": 10
 }

@@ -109,10 +109,11 @@ public class OrderJsonConverter implements EntityJsonConverter<Order> {
         return jsonArray;
     }
 
-    public JsonElement convertQueueStatsToJsonElement(final Long customerId,
+    public JsonElement convertQueueStatsToJsonElement(final Long customerId, final String customerName,
             final Integer position, final Integer waitTime) {
         final JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("customerId", customerId);
+        jsonObject.addProperty("customerName", customerName);
         jsonObject.addProperty("queuePosition", position);
         jsonObject.addProperty("queueEstimateWaitTime", waitTime);
         return jsonObject;
