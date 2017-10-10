@@ -6,7 +6,6 @@
     <persistence-unit name="storehousePU" transaction-type="JTA">
         <provider>org.hibernate.ejb.HibernatePersistence</provider>
         
-        <!-- This is a memory h2 db defined in standalone-full.xml for testing purpose -->
         <jta-data-source>java:jboss/datasources/storehouse</jta-data-source>
         <properties>
             <property name="hibernate.show_sql" value="false" />
