@@ -49,6 +49,12 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * REST endpoint for the order.
+ *
+ * @author ejiafzh
+ *
+ */
 @Path("/orders")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -77,8 +83,15 @@ public class OrderResource {
     @Inject
     OrderEventReceiver orderEventReceiver;
 
+    /**
+     * REST endpoint to add an order into the system.
+     *
+     * @param body
+     *            the body contains ClientId and quantity.
+     * @return whether or not the order is added.
+     */
     @POST
-    @RolesAllowed("CUSTOMER") // jiafanz: document this only customer can add order
+    @RolesAllowed("CUSTOMER")
     public Response add(final String body) {
         logger.info("Adding a new order with body {}", body);
 
@@ -121,6 +134,13 @@ public class OrderResource {
         return OrderStatus.valueOf(JsonReader.getStringOrNull(jsonObject, "status"));
     }
 
+    /**
+     * Cancel order REST endpoint.
+     *
+     * @param customerId
+     *            the customer ID to cancel an order
+     * @return whether or not the order cancellation is successful.
+     */
     @GET
     @Path("/{id}/cancel")
     @PermitAll
@@ -141,6 +161,15 @@ public class OrderResource {
         }
     }
 
+    /**
+     * Update the order status.
+     *
+     * @param id
+     *            the order id
+     * @param body
+     *            includes new status of the order
+     * @return whether or not the order status update is successful.
+     */
     @POST
     @Path("/{id}/status")
     @PermitAll
@@ -165,6 +194,13 @@ public class OrderResource {
         return Response.status(HttpCode.OK.getCode()).build();
     }
 
+    /**
+     * To find an existing order by ID.
+     *
+     * @param id
+     *            the order ID.
+     * @return an existing Order, null if it could not find one.
+     */
     @GET
     @Path("/{id}")
     @PermitAll
@@ -185,6 +221,11 @@ public class OrderResource {
         return rb.build();
     }
 
+    /**
+     * Find all the orders.
+     *
+     * @return a list of the found orders.
+     */
     @GET
     @Path("/all")
     @RolesAllowed("EMPLOYEE")
@@ -201,6 +242,11 @@ public class OrderResource {
                 .entity(OperationResultJsonWriter.toJson(OperationResult.success(jsonWithPagingAndEntries))).build();
     }
 
+    /**
+     * Find paginated data of order by the order filter.
+     *
+     * @return a json of orders.
+     */
     @GET
     @RolesAllowed("EMPLOYEE")
     // http://localhost:8080/storehouse/api/orders?page=0&per_page=2&sort=-startDate
@@ -218,7 +264,13 @@ public class OrderResource {
                 .entity(OperationResultJsonWriter.toJson(OperationResult.success(jsonWithPagingAndEntries))).build();
     }
 
-    // jiafanz: document this
+    /**
+     * Get the order statistics in the queue.
+     *
+     * @param customerId
+     *            the client ID.
+     * @return a statistics report of the order.
+     */
     @GET
     @Path("/stats/{id}")
     // http://localhost:8080/storehouse/api/orders/stats/{id}
@@ -257,7 +309,11 @@ public class OrderResource {
         return rb.build();
     }
 
-    // jiafanz: document this
+    /**
+     * Get the all order statistics in the queue.
+     *
+     * @return a statistics report of all orders.
+     */
     @GET
     @Path("/stats/all")
     @RolesAllowed({ "EMPLOYEE", "ADMIN" })
@@ -292,12 +348,15 @@ public class OrderResource {
 
     }
 
+    /**
+     * REST endpoint to consume orders.
+     *
+     * @return whether or not this consumption is successful.
+     */
     @GET
     @Path("/consume")
     @RolesAllowed({ "EMPLOYEE", "ADMIN" })
     // http://localhost:8080/storehouse/api/orders/consume
-    // jiafanz: document all the REST endpoints.
-    // jiafanz: optimize this method
     public Response consumeOrder() {
         logger.info("Consume orders from the queue");
 

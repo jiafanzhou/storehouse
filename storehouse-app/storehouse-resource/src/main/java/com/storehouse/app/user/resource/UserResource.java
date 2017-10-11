@@ -43,6 +43,12 @@ import javax.ws.rs.core.UriInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * User resource REST endpoint.
+ *
+ * @author ejiafzh
+ *
+ */
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -64,6 +70,13 @@ public class UserResource {
     @Context
     SecurityContext securityContext;
 
+    /**
+     * REST endpoint to add an order.
+     *
+     * @param body
+     *            json string of the body.
+     * @return a response from the REST endpoint.
+     */
     @POST
     public Response add(final String body) {
         logger.info("Adding a new user with body {}", body);
@@ -98,6 +111,15 @@ public class UserResource {
         return Response.status(httpCode.getCode()).entity(OperationResultJsonWriter.toJson(result)).build();
     }
 
+    /**
+     * REST endpoint to update an order.
+     *
+     * @param id
+     *            the database id
+     * @param body
+     *            json string of the body.
+     * @return a response from the REST endpoint.
+     */
     @PUT
     @Path("/{id}")
     @PermitAll
@@ -159,6 +181,15 @@ public class UserResource {
         return JsonReader.getStringOrNull(jsonObject, "password");
     }
 
+    /**
+     * REST endpoint to update the password for a given user based on the clientID
+     *
+     * @param id
+     *            client ID for the customer.
+     * @param body
+     *            json string of the body.
+     * @return a response from the REST endpoint.
+     */
     @PUT
     @Path("/{id}/password")
     @PermitAll
@@ -189,6 +220,13 @@ public class UserResource {
         return Response.status(httpCode.getCode()).entity(OperationResultJsonWriter.toJson(result)).build();
     }
 
+    /**
+     * Find the user by id REST endpoint.
+     * 
+     * @param id
+     *            the customer id.
+     * @return a found user.
+     */
     @GET
     @Path("/{id}")
     @RolesAllowed("ADMIN") // we just want ADMIN to perform this
@@ -217,6 +255,14 @@ public class UserResource {
         return user;
     }
 
+    /**
+     * Find the user by its email and password.
+     * This REST endpoint is essentially used to authenticate a user.
+     *
+     * @param body
+     *            includes email and password
+     * @return found user otherwise User not found or user not valid.
+     */
     @POST
     @Path("/authenticate")
     @PermitAll
@@ -239,6 +285,13 @@ public class UserResource {
         return rb.build();
     }
 
+    /**
+     * FInd the user by email.
+     *
+     * @param email
+     *            email of the user
+     * @return a json object response with the user.
+     */
     @GET
     @Path("/email/{email}")
     @RolesAllowed("ADMIN") // we just want ADMIN to perform this
@@ -259,10 +312,16 @@ public class UserResource {
         return rb.build();
     }
 
+    /**
+     * Find all users.
+     * An example:
+     * http://localhost:8080/storehouse/api/users/all
+     *
+     * @return a Json response
+     */
     @GET
     @Path("/all")
     @RolesAllowed("ADMIN") // we just want ADMIN to perform this
-    // http://localhost:8080/storehouse/api/users/all
     public Response findAll() {
         logger.info("Find all users.");
 
@@ -276,9 +335,15 @@ public class UserResource {
                 .entity(OperationResultJsonWriter.toJson(OperationResult.success(jsonWithPagingAndEntries))).build();
     }
 
+    /**
+     * Find all users based on the filter.
+     * An example:
+     * http://localhost:8080/storehouse/api/users?page=0&per_page=2&sort=-name
+     *
+     * @return a Json response
+     */
     @GET
     @RolesAllowed("ADMIN") // we just want ADMIN to perform this
-    // http://localhost:8080/storehouse/api/users?page=0&per_page=2&sort=-name
     public Response findByFilter() {
         final UserFilter userFilter = new UserFilterExtractorFromUrl(uriInfo).getFilter();
         logger.info("Finding users using filter: {}", userFilter);

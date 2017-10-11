@@ -15,9 +15,18 @@ import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 
+/**
+ * Order Json converter.
+ *
+ * @author ejiafzh
+ *
+ */
 @ApplicationScoped
 public class OrderJsonConverter implements EntityJsonConverter<Order> {
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Order convertFrom(final String json) {
         final JsonObject jsonObject = JsonReader.readAsJsonObject(json);
@@ -95,11 +104,17 @@ public class OrderJsonConverter implements EntityJsonConverter<Order> {
         return jsonObject;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonElement convertToJsonElement(final Order order) {
         return getOrderAsJsonElement(order, true);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonElement convertToJsonElement(final List<Order> orders) {
         final JsonArray jsonArray = new JsonArray();
@@ -109,6 +124,9 @@ public class OrderJsonConverter implements EntityJsonConverter<Order> {
         return jsonArray;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public JsonElement convertQueueStatsToJsonElement(final Long customerId, final String customerName,
             final Integer position, final Integer waitTime) {
         final JsonObject jsonObject = new JsonObject();
@@ -119,6 +137,9 @@ public class OrderJsonConverter implements EntityJsonConverter<Order> {
         return jsonObject;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public JsonElement convertDeliveryToJsonElement(final Long customerId, final String customerName,
             final String customerEmail, final Integer quantity) {
         final JsonObject jsonObject = new JsonObject();

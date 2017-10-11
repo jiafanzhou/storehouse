@@ -16,8 +16,18 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Validator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * User services implementation.
+ *
+ * @author ejiafzh
+ *
+ */
 @Stateless
 public class UserServicesImpl implements UserServices {
+    Logger logger = LoggerFactory.getLogger(getClass());
 
     @Inject
     UserRepository userRepository;
@@ -25,6 +35,9 @@ public class UserServicesImpl implements UserServices {
     @Inject
     Validator validator;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public User add(final User user) {
         validateUser(user);
@@ -61,6 +74,9 @@ public class UserServicesImpl implements UserServices {
         return userRepository.update(user);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public User findById(final Long id) {
         final User user = userRepository.findById(id);
@@ -70,16 +86,25 @@ public class UserServicesImpl implements UserServices {
         return user;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<User> findAll() {
         return userRepository.findAll();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<User> findAll(final String orderField) {
         return userRepository.findAll(orderField);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void updatePassword(final Long id, final String password) {
         final User foundUser = userRepository.findById(id);
@@ -90,6 +115,9 @@ public class UserServicesImpl implements UserServices {
         userRepository.update(foundUser);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public User findByEmail(final String email) {
         final User user = userRepository.findByEmail(email);
@@ -99,15 +127,23 @@ public class UserServicesImpl implements UserServices {
         return user;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public User findByEmailAndPassword(final String email, final String password) {
         final User user = findByEmail(email);
+        logger.debug("UserServiceImpl, findByEmailAndPassword: {}", user);
+        logger.debug("Password entered: {}, password in db: {}", password, user.getPassword());
         if (!PasswordUtils.encryptPassword(password).equals(user.getPassword())) {
             throw new UserNotFoundException();
         }
         return user;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public PaginatedData<User> findByFilter(final UserFilter userFilter) {
         return userRepository.findByFilter(userFilter);

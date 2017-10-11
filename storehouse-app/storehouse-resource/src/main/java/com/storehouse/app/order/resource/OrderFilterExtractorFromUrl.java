@@ -7,16 +7,28 @@ import com.storehouse.app.order.model.Order.OrderStatus;
 
 import javax.ws.rs.core.UriInfo;
 
+/**
+ * Order filter specific impl from the URI info.
+ *
+ * @author ejiafzh
+ *
+ */
 public class OrderFilterExtractorFromUrl extends AbstractFilterExtractorFromUrl {
     public OrderFilterExtractorFromUrl(final UriInfo uriInfo) {
         super(uriInfo);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String getDefaultSortField() {
         return "-createdAt";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public OrderFilter getFilter() {
         final OrderFilter orderFilter = new OrderFilter();

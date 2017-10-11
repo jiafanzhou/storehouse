@@ -6,6 +6,12 @@ import com.storehouse.app.common.model.filter.PaginationData.OrderMode;
 
 import javax.ws.rs.core.UriInfo;
 
+/**
+ * Class to extract the parameters from the URL for filter.
+ *
+ * @author ejiafzh
+ *
+ */
 public abstract class AbstractFilterExtractorFromUrl {
     private UriInfo uriInfo;
 
@@ -13,14 +19,35 @@ public abstract class AbstractFilterExtractorFromUrl {
     private static final int DEFAULT_PAGE = 0;
     private static final int DEFAULT_PER_PAGE = 10;
 
+    /**
+     * Get the default sort field to be used.
+     *
+     * @return the default sort field to be used.
+     */
     protected abstract String getDefaultSortField();
 
+    /**
+     * Get the filter to be used.
+     *
+     * @return the filter to be used.
+     */
     protected abstract GenericFilter getFilter();
 
+    /**
+     * Constructor to initialise the urlInfo.
+     *
+     * @param uriInfo
+     *            the uriInfo passed in.
+     */
     public AbstractFilterExtractorFromUrl(final UriInfo uriInfo) {
         this.uriInfo = uriInfo;
     }
 
+    /**
+     * Get the URI info,
+     *
+     * @return the URI info,
+     */
     protected UriInfo getUriInfo() {
         return uriInfo;
     }
@@ -53,19 +80,34 @@ public abstract class AbstractFilterExtractorFromUrl {
 
     // we have the current page, per page, name and sort
 
-    // if there is no pagination in uri, we defaults to the first page
+    /**
+     * we have the current page, per page, name and sort
+     * if there is no pagination in uri, we defaults to the first page
+     *
+     * @return the page of from the uri info.
+     */
     protected Integer getPage() {
         final String page = uriInfo.getQueryParameters().getFirst("page");
         return page == null ? DEFAULT_PAGE : Integer.parseInt(page);
     }
 
-    // if there is no pagination in uri, we defaults to 10 records per page
+    /**
+     * we have the current page, per page, name and sort
+     * if there is no pagination in uri, we defaults to 10 records per page
+     *
+     * @return the per_page of from the uri info.
+     */
     protected Integer getPerPage() {
         final String perPage = uriInfo.getQueryParameters().getFirst("per_page");
         return perPage == null ? DEFAULT_PER_PAGE : Integer.parseInt(perPage);
     }
 
-    // if there is no pagination in uri, use default sortField
+    /**
+     * we have the current page, per page, name and sort
+     * if there is no pagination in uri, use default sortField
+     *
+     * @return the sort field from the uri info.
+     */
     private String getSortField() {
         final String sortField = uriInfo.getQueryParameters().getFirst("sort");
         return sortField == null ? getDefaultSortField() : sortField;

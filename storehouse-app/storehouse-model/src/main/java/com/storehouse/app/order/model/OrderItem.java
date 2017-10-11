@@ -5,6 +5,17 @@ import java.io.Serializable;
 import javax.persistence.Embeddable;
 import javax.validation.constraints.NotNull;
 
+/**
+ * This represents each order item of an order.
+ *
+ * We have it in the model in the case we want to support multiple products and
+ * multiple order items from an order.
+ *
+ * We also modelled the price in case we want to support the pricing model.
+ *
+ * @author ejiafzh
+ *
+ */
 @Embeddable // an order contains one or more order item
 public class OrderItem implements Serializable {
     private static final long serialVersionUID = 3520003746949600860L;
@@ -16,39 +27,84 @@ public class OrderItem implements Serializable {
     @NotNull
     private Double price = 0.00;
 
+    /**
+     * Constructor with no args.
+     */
     public OrderItem() {
     }
 
+    /**
+     * Constructs an order item with quantity and price.
+     *
+     * @param quantity
+     *            the quantity of the order item
+     * @param price
+     *            the price of the order item
+     */
     public OrderItem(final Integer quantity, final Double price) {
         this(quantity);
         this.price = price;
     }
 
+    /**
+     * Constructs an order item with quantity only.
+     *
+     * @param quantity
+     *            the quantity of the order item.
+     */
     public OrderItem(final Integer quantity) {
         this.quantity = quantity;
     }
 
+    /**
+     * Get the quantity of the order item.
+     * 
+     * @return the quantity of the order item
+     */
     public Integer getQuantity() {
         return quantity;
     }
 
+    /**
+     * Set the quantity of the order item.
+     * 
+     * @param quantity
+     *            the quantity of the order item.
+     */
     public void setQuantity(final Integer quantity) {
         this.quantity = quantity;
     }
 
+    /**
+     * Get the price of the order item.
+     * 
+     * @return the price of the order item.
+     */
     public Double getPrice() {
         return price;
     }
 
+    /**
+     * Set the price of the order item.
+     * 
+     * @param price
+     *            the price of the order item.
+     */
     public void setPrice(final Double price) {
         this.price = price;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "OrderItem [quantity=" + quantity + ", price=" + price + "]";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -58,6 +114,9 @@ public class OrderItem implements Serializable {
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj)

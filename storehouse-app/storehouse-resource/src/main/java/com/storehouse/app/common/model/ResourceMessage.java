@@ -1,5 +1,11 @@
 package com.storehouse.app.common.model;
 
+/**
+ * RM resource message utility class to define error key and message.
+ * 
+ * @author ejiafzh
+ *
+ */
 public class ResourceMessage {
     private final String resource;
 

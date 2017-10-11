@@ -3,11 +3,24 @@ package com.storehouse.app.common.json;
 import com.google.gson.JsonObject;
 import com.storehouse.app.common.model.OperationResult;
 
+/**
+ * OPerational Result used by the resource layer.
+ *
+ * @author ejiafzh
+ *
+ */
 final public class OperationResultJsonWriter {
 
     private OperationResultJsonWriter() {
     }
 
+    /**
+     * Write into json string from an operation result object.
+     * 
+     * @param operationResult
+     *            Operation result object
+     * @return a string representation of the json.
+     */
     public static String toJson(final OperationResult operationResult) {
         return JsonWriter.writeToString(getJsonObject(operationResult));
     }

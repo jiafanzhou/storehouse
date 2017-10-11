@@ -15,10 +15,19 @@ import com.storehouse.app.user.model.User.UserType;
 
 import javax.enterprise.context.ApplicationScoped;
 
-//@ApplicationScoped is a CDI annotation, which means only one instance of
-//this class will be automatically injected for the lifecycle of application.
+/**
+ * User specific json converter.
+ *
+ * @author ejiafzh
+ *
+ */
+// @ApplicationScoped is a CDI annotation, which means only one instance of
+// this class will be automatically injected for the lifecycle of application.
 @ApplicationScoped
 public class UserJsonConverter implements EntityJsonConverter<User> {
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public User convertFrom(final String json) {
         final JsonObject jsonObject = JsonReader.readAsJsonObject(json);
@@ -31,6 +40,9 @@ public class UserJsonConverter implements EntityJsonConverter<User> {
         return user;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public JsonElement convertToJsonElement(final User user) {
         final JsonObject jsonObject = new JsonObject();

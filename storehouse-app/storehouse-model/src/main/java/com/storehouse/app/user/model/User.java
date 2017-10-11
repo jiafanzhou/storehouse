@@ -90,67 +90,154 @@ public abstract class User implements Serializable {
      */
     protected abstract List<Roles> getDefaultRoles();
 
+    /**
+     * Default constructor with no args.
+     *
+     * Whenever a new user is created, it will associate the current timestamp to
+     * the newly created user.
+     *
+     */
     public User() {
         this.createdAt = new Date();
         this.roles = getDefaultRoles();
     }
 
+    /**
+     * Get the user ID of the user.
+     *
+     * @return the user Id of the user.
+     */
     public Long getId() {
         return id;
     }
 
+    /**
+     * Set the user ID of the user.
+     *
+     * @param id
+     *            user ID of the user.
+     */
     public void setId(final Long id) {
         this.id = id;
     }
 
+    /**
+     * Get the timestamp when the user is created.
+     * 
+     * @return the timestamp when the user is created.
+     */
     public Date getCreatedAt() {
         return createdAt;
     }
 
+    /**
+     * Set the timestamp when the user is created.
+     * 
+     * @param createdAt
+     *            the timestamp when the user is created.
+     */
     public void setCreatedAt(final Date createdAt) {
         this.createdAt = createdAt;
     }
 
+    /**
+     * Get the name of the user.
+     * 
+     * @return the name of the user.
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     * Set the name of the user.
+     * 
+     * @param name
+     *            the name of the user.
+     */
     public void setName(final String name) {
         this.name = name;
     }
 
+    /**
+     * Get the email address of the user account.
+     * 
+     * @return the email address of the user account.
+     */
     public String getEmail() {
         return email;
     }
 
+    /**
+     * Set the email address of the user account.
+     * 
+     * @param email
+     *            email address of the user account.
+     */
     public void setEmail(final String email) {
         this.email = email;
     }
 
+    /**
+     * Get the password for the user.
+     * 
+     * @return the password for the user.
+     */
     public String getPassword() {
         return password;
     }
 
+    /**
+     * Set the password for the user.
+     * 
+     * @param password
+     *            the password for the user.
+     */
     public void setPassword(final String password) {
         this.password = password;
     }
 
+    /**
+     * Get the roles associated with this user.
+     * 
+     * @return the roles associated with this user.
+     */
     public List<Roles> getRoles() {
         return roles;
     }
 
+    /**
+     * Set the roles associated with this user.
+     * 
+     * @param roles
+     *            the roles associated with this user.
+     */
     public void setRoles(final List<Roles> roles) {
         this.roles = roles;
     }
 
+    /**
+     * Get the user type.
+     * 
+     * @return the user type.
+     */
     public UserType getUserType() {
         return userType;
     }
 
+    /**
+     * Set the user type.
+     * 
+     * @param userType
+     *            the user type.
+     */
     public void setUserType(final UserType userType) {
         this.userType = userType;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         final int prime = 31;
@@ -160,6 +247,9 @@ public abstract class User implements Serializable {
         return result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(final Object obj) {
         if (this == obj)
@@ -182,6 +272,9 @@ public abstract class User implements Serializable {
         return true;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return "User [id=" + id + ", createdAt=" + createdAt + ", name=" + name + ", email=" + email + ", roles="

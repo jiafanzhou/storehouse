@@ -221,7 +221,8 @@ public class OrderRepositoryUTest extends TestBaseRepository {
     public void testOrderPostionInQueue() {
         loadForAllReservedOrders();
         final Integer position = orderRepository
-                .checkOrderPositionInQueueByCustomerId(orderReservedDonaldTrump().getId());
+                .checkOrderPositionInQueueByCustomerId(
+                        normalizeDependencies(orderReservedDonaldTrump(), em).getCustomer().getId());
         logger.info("jiafanz: {}", position);
         assertThat(position, is(equalTo(3)));
     }
@@ -230,7 +231,8 @@ public class OrderRepositoryUTest extends TestBaseRepository {
     public void testOrderEstimatedWaitTimeInQueue() {
         loadForAllReservedOrders();
         final Integer waitTime = orderRepository
-                .checkOrderWaitTimeInQueueByCustomerId(orderReservedDonaldTrump().getId());
+                .checkOrderWaitTimeInQueueByCustomerId(
+                        normalizeDependencies(orderReservedDonaldTrump(), em).getCustomer().getId());
         logger.info("jiafanz: {}", waitTime);
         assertThat(waitTime, is(equalTo(17)));
     }

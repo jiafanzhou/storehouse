@@ -1,5 +1,10 @@
 package com.storehouse.app.common.model;
 
+/**
+ * HTTP code used by this storehouse application.
+ * @author ejiafzh
+ *
+ */
 public enum HttpCode {
     OK(200), 
     CREATED(201), 

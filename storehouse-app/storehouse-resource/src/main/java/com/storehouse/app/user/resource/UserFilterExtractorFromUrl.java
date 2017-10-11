@@ -6,17 +6,29 @@ import com.storehouse.app.user.model.User.UserType;
 
 import javax.ws.rs.core.UriInfo;
 
+/**
+ * User filter extractor.
+ *
+ * @author ejiafzh
+ *
+ */
 public class UserFilterExtractorFromUrl extends AbstractFilterExtractorFromUrl {
 
     public UserFilterExtractorFromUrl(final UriInfo uriInfo) {
         super(uriInfo);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected String getDefaultSortField() {
         return "name";
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public UserFilter getFilter() {
         final UserFilter userFilter = new UserFilter();

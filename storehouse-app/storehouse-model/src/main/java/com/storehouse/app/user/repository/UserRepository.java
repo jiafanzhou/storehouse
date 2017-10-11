@@ -13,16 +13,28 @@ import javax.persistence.EntityManager;
 import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 
+/**
+ * User repository to interact with the database.
+ *
+ * @author ejiafzh
+ *
+ */
 @Stateless
 public class UserRepository extends GenericRepository<User> {
     @PersistenceContext
     EntityManager em;
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public EntityManager getEntityManager() {
         return em;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Class<User> getPersistentClass() {
         return User.class;
@@ -30,11 +42,22 @@ public class UserRepository extends GenericRepository<User> {
 
     /**
      * We consider a user exists if the email is already registered.
+     *
+     * @param user
+     *            the user to be checked
+     * @return true if user already exists, otherwise false.
      */
     public boolean isUserNameAlreadyExists(final User user) {
         return propertyAlreadyExists(user.getId(), "email", user.getEmail());
     }
 
+    /**
+     * Find the user by its email.
+     * 
+     * @param email
+     *            user email
+     * @return found user, null if not found.
+     */
     public User findByEmail(final String email) {
         User found = null;
         if (email != null) {

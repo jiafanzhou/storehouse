@@ -32,6 +32,12 @@ import javax.validation.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Order Service layer implementation.
+ *
+ * @author ejiafzh
+ *
+ */
 @Stateless
 public class OrderServicesImpl implements OrderServices {
     private Logger logger = LoggerFactory.getLogger(getClass());
@@ -49,8 +55,6 @@ public class OrderServicesImpl implements OrderServices {
     // it is just the way how sessionContext is injected.
     @Resource
     SessionContext sessionContext;
-
-    // jiafanz: document this queue
 
     // configures our JMS queue
     @Resource(mappedName = "java:/jms/queue/Orders")
@@ -101,7 +105,7 @@ public class OrderServicesImpl implements OrderServices {
         }
 
         final Long userId = user.getId();
-        if (userId != orderCustomerId) {
+        if (!userId.equals(orderCustomerId)) {
             final String strTemplate = "ClientId %d in order does not match the logged in customer id %d.";
             throw new InvalidClientIdInOrder(String.format(strTemplate, orderCustomerId, userId));
         }
@@ -111,9 +115,11 @@ public class OrderServicesImpl implements OrderServices {
         ValidationUtils.validateEntityFields(validator, order);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Order add(final Order order) {
-        // jiafanz: update this
         setCustomerOnOrder(order);
 
         // when adding a new order, we need to set the initial status, and calculate the total
@@ -123,14 +129,16 @@ public class OrderServicesImpl implements OrderServices {
         validateOrder(order);
 
         // part of the XA transaction
-        final Order addedOrder = orderRepository.add(order);
-
         // sends order event to the queue
+        final Order addedOrder = orderRepository.add(order);
         sendEvent(addedOrder);
 
         return addedOrder;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Order findById(final Long id) {
         final Order order = orderRepository.findById(id);
@@ -148,7 +156,9 @@ public class OrderServicesImpl implements OrderServices {
         }
     }
 
-    // jiafanz: document this
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void updateStatus(final Long id, final OrderStatus newStatus) {
         final Order order = findById(id);
@@ -176,31 +186,49 @@ public class OrderServicesImpl implements OrderServices {
         orderRepository.update(order);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Order> findAll() {
         return orderRepository.findAll();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Order> findAll(final String orderField) {
         return orderRepository.findAll(orderField);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public PaginatedData<Order> findByFilter(final OrderFilter orderFilter) {
         return orderRepository.findByFilter(orderFilter);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer checkOrderPositionInQueueByCustomerId(final Long customerId) {
         return orderRepository.checkOrderPositionInQueueByCustomerId(customerId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Integer checkOrderWaitTimeInQueueByCustomerId(final Long customerId) {
         return orderRepository.checkOrderWaitTimeInQueueByCustomerId(customerId);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public List<Order> findAllReservedOrders() {
         if (sessionContext.isCallerInRole(Roles.CUSTOMER.name())) {
@@ -213,20 +241,34 @@ public class OrderServicesImpl implements OrderServices {
      * Send an event to the queue.
      *
      * @param order
+     *            the order to be send
      */
     private void sendEvent(final Order order) {
         logger.info("Sending an event to the orders queue");
         if (jmsContext != null) {
             final JMSProducer producer = jmsContext.createProducer();
-            if (order.getCustomer().getId() < 1000) {
-                logger.info("This is a priority queue for customerId {}", order.getCustomer().getId());
-                // this is a priority queue
-                producer.setPriority(9); // set this to highest priority
-            } else {
-                logger.info("This is a non-priority queue for customerId {}", order.getCustomer().getId());
-                producer.setPriority(3); // default is 4, we decrease it by 1
-            }
+            final Customer customer = order.getCustomer();
+            setQueuePriority(producer, customer);
             producer.send(ordersQueue, order);
+        }
+    }
+
+    /**
+     * Set the queue priority based on the customerID.
+     *
+     * @param producer
+     *            JMS producer.
+     * @param customer
+     *            customer with the ID.
+     */
+    private void setQueuePriority(final JMSProducer producer, final Customer customer) {
+        if (customer.isPremiumCustomer()) {
+            logger.info("This is a priority queue for customerId {}", customer.getId());
+            // this is a priority queue
+            producer.setPriority(9); // set this to highest priority
+        } else {
+            logger.info("This is a non-priority queue for customerId {}", customer.getId());
+            producer.setPriority(3); // default is 4, we decrease it by 1
         }
     }
 }

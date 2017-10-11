@@ -5,9 +5,23 @@ import com.google.gson.JsonElement;
 
 import java.util.List;
 
+/**
+ * Utility class to convert Json element.
+ *
+ * @author ejiafzh
+ *
+ * @param <T>
+ */
 public interface EntityJsonConverter<T> {
     T convertFrom(final String json);
 
+    /**
+     * Entity needs to implement this method to perform the conversion.
+     *
+     * @param entity
+     *            the entity to be converted.
+     * @return a converted JsonElement
+     */
     JsonElement convertToJsonElement(final T entity);
 
     /**

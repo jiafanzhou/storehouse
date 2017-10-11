@@ -8,19 +8,48 @@ import com.google.gson.JsonSyntaxException;
 import com.storehouse.app.common.exception.InvalidJsonException;
 
 /**
+ * Utility class to be responsible for reading json.
  *
  * @author ejiafzh
  *
  */
 public class JsonReader {
+    /**
+     * Read a json object.
+     *
+     * @param json
+     *            json object to be read
+     * @return a read json object
+     * @throws InvalidJsonException
+     *             if any exception occurs.
+     */
     public static JsonObject readAsJsonObject(final String json) throws InvalidJsonException {
         return readJsonAs(json, JsonObject.class);
     }
 
+    /**
+     * Read a json array.
+     *
+     * @param json
+     *            json array object to be read
+     * @return a read json object
+     * @throws InvalidJsonException
+     *             if any exception occurs.
+     */
     public static JsonArray readAsJsonArray(final String json) throws InvalidJsonException {
         return readJsonAs(json, JsonArray.class);
     }
 
+    /**
+     * Read json object based on its type.
+     * 
+     * @param json
+     *            json object to be read
+     * @param jsonClass
+     *            type class
+     * @return a read json object.
+     * @throws InvalidJsonException
+     */
     public static <T> T readJsonAs(final String json, final Class<T> jsonClass)
             throws InvalidJsonException {
         if (json == null || json.trim().isEmpty()) {
