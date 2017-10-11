@@ -1,6 +1,8 @@
 package com.storehouse.app.order.services.impl;
 
 import com.storehouse.app.order.model.Order;
+import com.storehouse.app.order.model.Order.OrderStatus;
+import com.storehouse.app.order.services.OrderServices;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -30,6 +32,9 @@ import org.slf4j.LoggerFactory;
 @Stateless
 public class OrderEventReceiver {
     private Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Inject
+    private OrderServices orderServices;
 
     // configures our JMS queue
     @Resource(mappedName = "java:/jms/queue/Orders")
@@ -68,6 +73,12 @@ public class OrderEventReceiver {
     // consume the item from the queue and add to list
     private void consumeAndAddToList(final List<Order> consumedOrders, final JMSConsumer jmsConsumer) {
         final Order order = jmsConsumer.receiveBody(Order.class, 0);
+
+        final Order dbOrder = orderServices.findById(order.getId());
+        if (dbOrder.getCurrentStatus() != OrderStatus.RESERVED) {
+            // this could mean the order has been cancelled.
+            return;
+        }
         logger.debug("Order received: {}", order);
         consumedOrders.add(order);
     }
@@ -79,6 +90,17 @@ public class OrderEventReceiver {
         while (messages.hasMoreElements()) {
             final ObjectMessage message = messages.nextElement();
             final Order orderToCheck = (Order) message.getObject();
+
+            // we need to perform a check in the database and see its current state
+            // if it is canceled, we will consume and simply dump it.
+            final Order dbOrder = orderServices.findById(orderToCheck.getId());
+            if (dbOrder.getCurrentStatus() != OrderStatus.RESERVED) {
+                // this could mean the order has been cancelled.
+                // we simply ignore it and continue the next item
+                logger.info("Order {} status is not RESERVED, skip it", orderToCheck.getId());
+                orderCountToConsume++;
+                continue;
+            }
             if (currentCapacity == 0 && orderToCheck.calculateTotalQuantity() >= Order.MAX_LOAD) {
                 // means next is a large order
                 orderCountToConsume = 1;

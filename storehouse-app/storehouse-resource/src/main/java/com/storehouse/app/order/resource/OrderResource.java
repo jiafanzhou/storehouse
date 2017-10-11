@@ -367,29 +367,37 @@ public class OrderResource {
             logger.info("Consume orders: {}", orders);
             for (final Order order : orders) {
                 // check the database if this order is not RESERVED
-                final OrderStatus currentStatus = orderServices.findById(order.getId()).getCurrentStatus();
-                if (currentStatus == OrderStatus.RESERVED) {
-                    logger.info("Order {} is RESERVED, we will deliver it now", order);
+                try {
+                    final OrderStatus currentStatus = orderServices.findById(order.getId()).getCurrentStatus();
+                    if (currentStatus == OrderStatus.RESERVED) {
+                        logger.info("Order {} is RESERVED, we will deliver it now", order);
 
-                    // delivery
+                        // delivery
 
-                    // make this order as PENDING state
-                    try {
-                        orderServices.updateStatus(order.getId(), OrderStatus.PENDING);
-                        logger.info("order id {} status changed to Pending", order.getId());
-                    } catch (final Exception ex) {
-                        logger.error("Failed to change the orderId {} to Pending state", order.getId());
-                        throw ex;
+                        // make this order as PENDING state
+                        try {
+                            orderServices.updateStatus(order.getId(), OrderStatus.PENDING);
+                            logger.info("order id {} status changed to Pending", order.getId());
+                        } catch (final Exception ex) {
+                            logger.error("Failed to change the orderId {} to Pending state", order.getId());
+                            throw ex;
+                        }
+
+                        final Long customerId = order.getCustomer().getId();
+                        final String customerName = order.getCustomer().getName();
+                        final String customerEmail = order.getCustomer().getEmail();
+                        final Integer quantity = order.calculateTotalQuantity();
+                        jsonArray.add(converter.convertDeliveryToJsonElement(customerId,
+                                customerName, customerEmail, quantity));
+                    } else {
+                        logger.info("This order id {} could be cancelled or delivered, ignore", order.getId());
                     }
+                } catch (final OrderNotFoundException ex) {
+                    logger.info("No Order found for id: {}", order.getId());
+                    return Response.status(HttpCode.NOT_FOUND.getCode())
+                            .entity(OperationResultJsonWriter.toJson(getOperationResultNotFound(RM))).build();
+                }
 
-                    final Long customerId = order.getCustomer().getId();
-                    final String customerName = order.getCustomer().getName();
-                    final String customerEmail = order.getCustomer().getEmail();
-                    final Integer quantity = order.calculateTotalQuantity();
-                    jsonArray.add(converter.convertDeliveryToJsonElement(customerId,
-                            customerName, customerEmail, quantity));
-                } else
-                    logger.info("This order id {} could be cancelled or delivered, ignore", order.getId());
             }
             // construct the JSON response
             final JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithJsonArray(jsonArray);
