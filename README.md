@@ -433,6 +433,12 @@ Assuming that the root REST endpoint for Customer is: http://localhost:8080/stor
 * [PostgreSQL](https://www.postgresql.org/) - Relational opensource database
 
 
+## Document
+Please refer to the Wiki page of this project.
+
+Javadocs can also be found at:
+https://github.com/jiafanzhou/storehouse/tree/master/storehouse-app/docs
+
 ## Versioning
 
 Use [GIT](https://git-scm.com/) for versioning. For the versions available, see the [releases on this repository](https://github.com/jiafanzhou/storehouse/releases). 
