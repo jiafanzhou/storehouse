@@ -260,8 +260,8 @@ public class Order implements Serializable {
      */
     public void addHistoryEntry(final OrderStatus newStatus) {
         if (currentStatus != null) {
-            // any order except RESERVED cannot change its state
-            if (currentStatus != OrderStatus.RESERVED) {
+            // any order except RESERVED or PENDING cannot change its state
+            if (currentStatus == OrderStatus.DELIVERED || currentStatus == OrderStatus.CANCELLED) {
                 throw new IllegalArgumentException("An order in the state " + currentStatus
                         + " cannot have its state changed.");
             }
